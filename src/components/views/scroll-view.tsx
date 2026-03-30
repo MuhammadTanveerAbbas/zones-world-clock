@@ -1,0 +1,181 @@
+"use client";
+
+import {
+	formatPeriod,
+	formatTime,
+	getDayDelta,
+	getDeltaHours,
+	getZonedTime,
+} from "@/lib/time-utils";
+import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
+import type { Zone } from "@/lib/zones";
+import { Reorder } from "motion/react";
+
+export function ScrollView({
+	zones,
+	homeId,
+	homeTz,
+	displayTime,
+	isScrubbing,
+	use24h,
+	onRemove,
+	onSetHome,
+	onReorder,
+	ambientMode,
+}: {
+	zones: Zone[];
+	homeId: string;
+	homeTz: string;
+	displayTime: Date;
+	isScrubbing: boolean;
+	use24h: boolean;
+	onRemove: (id: string) => void;
+	onSetHome: (id: string) => void;
+	onReorder: (ids: string[]) => void;
+	ambientMode?: boolean;
+}) {
+	const home = zones.filter((z) => z.id === homeId);
+	const others = zones.filter((z) => z.id !== homeId);
+	const sorted = [...home, ...others];
+
+	return (
+		<div className="flex-1 overflow-y-auto">
+			<Reorder.Group
+				axis="y"
+				values={sorted.map((z) => z.id)}
+				onReorder={(newIds) => onReorder(newIds)}
+				className="flex flex-col gap-1.5 sm:gap-2 p-2 sm:p-4 md:p-6"
+			>
+				{sorted.map((zone) => {
+					const isHome = zone.id === homeId;
+					const delta = isHome
+						? 0
+						: getDeltaHours(homeTz, zone.tz, displayTime);
+					const homeZoned = getZonedTime(displayTime, homeTz);
+					const targetZoned = getZonedTime(displayTime, zone.tz);
+					const dayDelta = isHome ? 0 : getDayDelta(homeZoned, targetZoned);
+					const timeStr = formatTime(displayTime, zone.tz, use24h);
+					const period = use24h ? "" : formatPeriod(displayTime, zone.tz);
+					const deltaSign = delta > 0 ? "+" : "";
+					const deltaStr = delta !== 0 ? `${deltaSign}${delta}h` : "";
+					const ambientGradient = ambientMode
+						? getAmbientInlineGradient(
+								getTimeOfDay(displayTime, zone.tz),
+								"right",
+								zone.countryCode,
+							)
+						: undefined;
+
+					return (
+						<Reorder.Item
+							key={zone.id}
+							value={zone.id}
+							dragListener={!isHome}
+							style={
+								ambientGradient
+									? { backgroundImage: ambientGradient }
+									: undefined
+							}
+							className={`group relative border border-(--color-border) rounded-lg transition-all duration-200 px-2 sm:px-5 md:px-8 py-2.5 sm:py-5 ${
+								isHome
+									? "border-l-4 border-l-(--color-accent) bg-(--color-accent)/[0.05] shadow-sm"
+									: "hover:bg-(--color-foreground)/[0.02] hover:shadow-md hover:border-(--color-muted) cursor-grab active:cursor-grabbing"
+							}`}
+						>
+							<div className="flex items-center justify-between">
+								<div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+									<span
+										className={`fi fi-${zone.countryCode} shrink-0 rounded`}
+										style={{
+											fontSize: "clamp(1.5rem, 4vw, 3.5rem)",
+											lineHeight: 1,
+										}}
+									/>
+									<div className="min-w-0 flex-1">
+										<div className="flex items-center justify-between gap-2">
+											<div className="font-mono text-base sm:text-2xl md:text-3xl font-bold text-(--color-foreground) tracking-wider uppercase leading-none truncate">
+												{zone.label}
+											</div>
+											<div className="flex items-baseline gap-0.5 sm:gap-1 shrink-0">
+												<div
+													className="font-mono font-bold tabular-nums tracking-wider"
+													style={{
+														fontSize: "clamp(20px, 5vw, 72px)",
+														lineHeight: 1,
+													}}
+												>
+													{timeStr}
+												</div>
+												{period && (
+													<span
+														className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"
+														style={{
+															fontSize: "clamp(8px, 1.5vw, 20px)",
+															lineHeight: 1,
+														}}
+													>
+														{period}
+													</span>
+												)}
+											</div>
+										</div>
+										<div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
+											<span className="font-mono text-[9px] sm:text-xs md:text-sm text-(--color-muted-foreground) uppercase tracking-widest truncate">
+												{zone.sublabel}
+											</span>
+											{isHome && (
+												<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 sm:px-1.5 py-0.5">
+													home
+												</span>
+											)}
+											{deltaStr && (
+												<span
+													className={`font-mono text-xs sm:text-base md:text-lg font-bold tracking-wider ${
+														delta > 0
+															? "text-(--color-delta-positive)"
+															: "text-(--color-delta-negative)"
+													}`}
+												>
+													{deltaStr}
+												</span>
+											)}
+											{dayDelta !== 0 && (
+												<span
+													className={`font-mono text-[10px] sm:text-sm font-bold ${
+														dayDelta > 0
+															? "text-(--color-delta-positive)"
+															: "text-(--color-delta-negative)"
+													}`}
+												>
+													{dayDelta > 0 ? "+1d" : "-1d"}
+												</span>
+											)}
+											{!isHome && (
+												<div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+													<button
+														type="button"
+														onClick={() => onSetHome(zone.id)}
+														className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
+													>
+														set home
+													</button>
+													<button
+														type="button"
+														onClick={() => onRemove(zone.id)}
+														className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
+													>
+														×
+													</button>
+												</div>
+											)}
+										</div>
+									</div>
+								</div>
+							</div>
+						</Reorder.Item>
+					);
+				})}
+			</Reorder.Group>
+		</div>
+	);
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#0a0a0a"/>
+  
+  <!-- Globe lines -->
+  <circle cx="64" cy="64" r="48" stroke="#fafafa" stroke-width="2" fill="none" opacity="0.3"/>
+  <ellipse cx="64" cy="64" rx="48" ry="24" stroke="#fafafa" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <ellipse cx="64" cy="64" rx="24" ry="48" stroke="#fafafa" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <line x1="16" y1="64" x2="112" y2="64" stroke="#fafafa" stroke-width="1.5" opacity="0.3"/>
+  
+  <!-- Clock face -->
+  <circle cx="64" cy="64" r="32" fill="#fafafa"/>
+  <circle cx="64" cy="64" r="30" fill="#0a0a0a"/>
+  
+  <!-- Hour markers -->
+  <circle cx="64" cy="38" r="2" fill="#fafafa"/>
+  <circle cx="64" cy="90" r="2" fill="#fafafa"/>
+  <circle cx="90" cy="64" r="2" fill="#fafafa"/>
+  <circle cx="38" cy="64" r="2" fill="#fafafa"/>
+  
+  <!-- Clock hands -->
+  <line x1="64" y1="64" x2="64" y2="48" stroke="#fafafa" stroke-width="3" stroke-linecap="round"/>
+  <line x1="64" y1="64" x2="78" y2="64" stroke="#fafafa" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- Center dot -->
+  <circle cx="64" cy="64" r="3" fill="#fafafa"/>
+</svg>
