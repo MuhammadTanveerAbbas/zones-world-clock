@@ -19,8 +19,8 @@ export function CompactView({
 	homeTz?: string;
 }) {
 	return (
-		<div className="flex-1 flex items-center justify-center p-2 sm:p-6 md:p-10">
-			<div className="flex flex-col gap-1.5 sm:gap-3 justify-center w-full">
+		<div className="flex-1 overflow-y-auto scrollbar-hide p-2 sm:p-6 md:p-10">
+			<div className="flex flex-col gap-1.5 sm:gap-3 w-full">
 				{groups.map((group, i) => {
 					const isHomeGroup = group.offset === 0;
 					const deltaSign = group.offset > 0 ? "+" : "";

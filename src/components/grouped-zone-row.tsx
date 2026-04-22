@@ -40,169 +40,87 @@ export function GroupedZoneRow({
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
 			style={ambientGradient ? { backgroundImage: ambientGradient } : undefined}
 			aria-label={`${cityNames}  ${group.timeStr}${group.period ? ` ${group.period}` : ""}${deltaStr ? `, ${deltaStr}` : ""}`}
-			className={`group flex flex-col sm:flex-row sm:items-center sm:justify-between px-3 sm:px-5 md:px-8 lg:px-12 py-1 sm:py-0 border-b border-(--color-border) transition-colors flex-1 min-h-0 overflow-hidden ${
+			className={`flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 rounded-xl border transition-all duration-200 ${
 				isHomeGroup
-					? "border-l-2 border-l-(--color-foreground) bg-foreground/2"
-					: "border-l-2 border-l-transparent hover:bg-foreground/2"
+					? "border-l-4 border-l-(--color-foreground) border-(--color-border) bg-foreground/[0.04]"
+					: "border-(--color-border) hover:bg-foreground/[0.02] hover:border-(--color-muted)"
 			}`}
 		>
-			{/* Mobile: city name above */}
-			<div
-				className="sm:hidden font-mono font-bold text-(--color-foreground) tracking-wider uppercase leading-none truncate"
-				style={{ fontSize: "clamp(14px, 4vw, 22px)" }}
-			>
-				{cityNames}
-			</div>
-
-			<div className="flex items-center justify-between sm:justify-start sm:gap-4 md:gap-5 min-w-0 flex-1 sm:flex-1">
-				<div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-					{/* Flags */}
-					<div className="flex items-center gap-1 sm:gap-2 shrink-0">
-						{group.zones.map((zone) => (
-							<span
-								key={zone.id}
-								className={`fi fi-${zone.countryCode} rounded`}
-								aria-hidden="true"
-								style={{
-									fontSize:
-										group.zones.length > 2
-											? "clamp(2rem, 6vw, 4rem)"
-											: "clamp(2.5rem, 8vw, 5rem)",
-									lineHeight: 1,
-								}}
-							/>
-						))}
-					</div>
-					{/* Mobile: badges */}
-					<div className="flex items-center gap-1 sm:hidden">
+			{/* Left: flags + city info */}
+			<div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+				<div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+					{group.zones.map((zone) => (
+						<span
+							key={zone.id}
+							className={`fi fi-${zone.countryCode} rounded`}
+							aria-hidden="true"
+							style={{ fontSize: "clamp(1.6rem, 4vw, 2.8rem)", lineHeight: 1 }}
+						/>
+					))}
+				</div>
+				<div className="flex flex-col min-w-0">
+					<div className="flex items-center gap-2">
+						<span
+							className="font-mono font-bold text-(--color-foreground) tracking-wider uppercase leading-none truncate"
+							style={{ fontSize: "clamp(13px, 2.2vw, 22px)" }}
+						>
+							{cityNames}
+						</span>
 						{isHomeGroup && (
-							<span
-								className="font-mono uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 shrink-0"
-								style={{ fontSize: "8px" }}
-							>
+							<span className="font-mono uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1.5 py-0.5 rounded text-[9px] shrink-0">
 								home
 							</span>
 						)}
-						{deltaStr && (
-							<m.span
-								key={deltaStr}
-								initial={{ scale: 0.9, opacity: 0 }}
-								animate={{ scale: 1, opacity: 1 }}
-								className={`font-mono font-bold tracking-wider ${
-									group.offset > 0
-										? "text-(--color-delta-positive)"
-										: "text-(--color-delta-negative)"
-								}`}
-								style={{ fontSize: "clamp(12px, 3vw, 16px)" }}
-							>
-								{deltaStr}
-							</m.span>
-						)}
-						{group.dayDelta !== 0 && (
-							<span
-								className={`font-mono font-bold ${
-									group.dayDelta > 0
-										? "text-(--color-delta-positive)"
-										: "text-(--color-delta-negative)"
-								}`}
-								style={{ fontSize: "clamp(10px, 2.5vw, 14px)" }}
-							>
-								{group.dayDelta > 0 ? "+1d" : "-1d"}
-							</span>
-						)}
 					</div>
+					<span
+						className="font-mono text-(--color-muted-foreground) uppercase tracking-widest truncate mt-0.5"
+						style={{ fontSize: "clamp(9px, 1.2vw, 13px)" }}
+					>
+						{sublabels}
+					</span>
 				</div>
+			</div>
 
-				{/* Mobile: time */}
-				<div className="flex items-baseline gap-1 shrink-0 sm:hidden">
-					<div
-						className="font-mono font-bold tabular-nums tracking-wider"
-						style={{ fontSize: "clamp(36px, 12vw, 64px)", lineHeight: 1 }}
+			{/* Right: delta + time */}
+			<div className="flex items-baseline gap-1.5 sm:gap-2 shrink-0">
+				<div className="flex flex-col items-end gap-0.5">
+					{deltaStr && (
+						<m.span
+							key={deltaStr}
+							initial={{ scale: 0.9, opacity: 0 }}
+							animate={{ scale: 1, opacity: 1 }}
+							className={`font-mono font-bold tracking-wider text-right ${
+								group.offset > 0
+									? "text-(--color-delta-positive)"
+									: "text-(--color-delta-negative)"
+							}`}
+							style={{ fontSize: "clamp(10px, 1.4vw, 14px)" }}
+						>
+							{deltaStr}
+							{group.dayDelta !== 0 && (
+								<span className="ml-1">{group.dayDelta > 0 ? "+1d" : "-1d"}</span>
+							)}
+						</m.span>
+					)}
+				</div>
+				<div className="flex items-baseline gap-1">
+					<span
+						className={`font-mono font-bold tabular-nums tracking-wider transition-opacity ${
+							isScrubbing && !isHomeGroup ? "opacity-70" : ""
+						}`}
+						style={{ fontSize: "clamp(22px, 4vw, 42px)", lineHeight: 1 }}
 					>
 						{group.timeStr}
-					</div>
+					</span>
 					{group.period && (
 						<span
 							className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"
-							style={{ fontSize: "clamp(11px, 2.5vw, 16px)", lineHeight: 1 }}
+							style={{ fontSize: "clamp(10px, 1.4vw, 14px)", lineHeight: 1 }}
 						>
 							{group.period}
 						</span>
 					)}
 				</div>
-
-				{/* Desktop: city + sublabel */}
-				<div className="hidden sm:flex sm:flex-col min-w-0">
-					<div
-						className="font-mono font-bold text-(--color-foreground) tracking-wider uppercase leading-none truncate"
-						style={{ fontSize: "clamp(14px, 4vw, 52px)" }}
-					>
-						{cityNames}
-					</div>
-					<div className="flex items-center gap-1.5 sm:gap-2 mt-0.5">
-						<span
-							className="font-mono text-(--color-muted-foreground) uppercase tracking-widest truncate"
-							style={{ fontSize: "clamp(7px, 1.3vw, 16px)" }}
-						>
-							{sublabels}
-						</span>
-						{isHomeGroup && (
-							<span
-								className="font-mono uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 sm:px-1.5 py-0.5 shrink-0"
-								style={{ fontSize: "clamp(7px, 1vw, 11px)" }}
-							>
-								home
-							</span>
-						)}
-					</div>
-				</div>
-			</div>
-
-			{/* Desktop: delta + time */}
-			<div className="hidden sm:flex items-baseline gap-1 sm:gap-2 shrink-0">
-				{deltaStr && (
-					<m.span
-						key={deltaStr}
-						initial={{ scale: 0.9, opacity: 0 }}
-						animate={{ scale: 1, opacity: 1 }}
-						className={`font-mono font-bold tracking-wider ${
-							group.offset > 0
-								? "text-(--color-delta-positive)"
-								: "text-(--color-delta-negative)"
-						}`}
-						style={{ fontSize: "clamp(12px, 2.5vw, 28px)" }}
-					>
-						{deltaStr}
-					</m.span>
-				)}
-				{group.dayDelta !== 0 && (
-					<span
-						className={`font-mono font-bold ${
-							group.dayDelta > 0
-								? "text-(--color-delta-positive)"
-								: "text-(--color-delta-negative)"
-						}`}
-						style={{ fontSize: "clamp(10px, 2vw, 22px)" }}
-					>
-						{group.dayDelta > 0 ? "+1d" : "-1d"}
-					</span>
-				)}
-				<div
-					className={`font-mono font-bold tabular-nums tracking-wider transition-opacity ${
-						isScrubbing && !isHomeGroup ? "opacity-80" : ""
-					}`}
-					style={{ fontSize: "clamp(32px, 8vw, 100px)", lineHeight: 1 }}
-				>
-					{group.timeStr}
-				</div>
-				{group.period && (
-					<span
-						className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"
-						style={{ fontSize: "clamp(11px, 2vw, 24px)", lineHeight: 1 }}
-					>
-						{group.period}
-					</span>
-				)}
 			</div>
 		</m.div>
 	);

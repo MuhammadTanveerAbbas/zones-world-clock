@@ -50,6 +50,13 @@ export const DEFAULT_ZONES: Zone[] = [
 		tz: "Asia/Tokyo",
 	},
 	{
+		id: "singapore",
+		label: "Singapore",
+		sublabel: "Singapore",
+		countryCode: "sg",
+		tz: "Asia/Singapore",
+	},
+	{
 		id: "sydney",
 		label: "Sydney",
 		sublabel: "Australia",
