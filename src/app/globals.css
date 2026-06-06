@@ -22,6 +22,7 @@
 	--border: #e4e4e7;
 	--border-subtle: #f4f4f5;
 	--accent: #0a0a0a;
+	--color-glass: rgba(250, 250, 250, 0.8);
 }
 
 .dark {
@@ -32,12 +33,17 @@
 	--border: #1a1a1a;
 	--border-subtle: #141414;
 	--accent: #fafafa;
+	--color-glass: rgba(10, 10, 10, 0.8);
 }
 
 html,
 body {
 	height: 100%;
 	overflow: hidden;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
 }
 
 * {
@@ -83,4 +89,75 @@ input[type="range"]::-moz-range-thumb {
 	border-radius: 0;
 	border: none;
 	cursor: ew-resize;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+@keyframes pulse-dot {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.4; }
+}
+
+.animate-pulse-dot {
+	animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes slide-up {
+	from { opacity: 0; transform: translateY(8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+	animation: slide-up 0.3s ease-out;
+}
+
+@keyframes fade-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.animate-fade-in {
+	animation: fade-in 0.2s ease-out;
+}
+
+@keyframes pulse-soft {
+	0%, 100% { opacity: 0.6; }
+	50% { opacity: 1; }
+}
+
+.animate-pulse-soft {
+	animation: pulse-soft 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+@media (hover: none) and (pointer: coarse) {
+	input[type="range"]::-webkit-slider-thumb {
+		height: 40px;
+		width: 4px;
+		margin-top: -20px;
+	}
+	input[type="range"]::-moz-range-thumb {
+		height: 40px;
+		width: 4px;
+	}
+}
+
+@media (max-width: 639px) {
+	button, a {
+		min-height: 32px;
+	}
 }

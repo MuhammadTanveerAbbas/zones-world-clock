@@ -13,5 +13,8 @@
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab"
+	},
+	"files": {
+		"ignore": [".next/**", "node_modules/**"]
 	}
 }

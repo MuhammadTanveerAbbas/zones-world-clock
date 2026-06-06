@@ -4,6 +4,8 @@ import {
 	getDayDelta,
 	getDeltaHours,
 	getZonedTime,
+	getTimezoneAbbreviation,
+	isDST,
 } from "./time-utils";
 import type { Zone } from "./zones";
 
@@ -14,6 +16,8 @@ export type ZoneGroup = {
 	timeStr: string;
 	period: string;
 	dayDelta: -1 | 0 | 1;
+	abbreviation: string;
+	dst: boolean;
 };
 
 export function groupZones(
@@ -46,6 +50,8 @@ export function groupZones(
 			timeStr: formatTime(displayTime, homeTz, use24h),
 			period: use24h ? "" : formatPeriod(displayTime, homeTz),
 			dayDelta: 0,
+			abbreviation: getTimezoneAbbreviation(homeTz, displayTime),
+			dst: isDST(homeTz, displayTime),
 		});
 	}
 
@@ -60,6 +66,8 @@ export function groupZones(
 			timeStr: formatTime(displayTime, tz, use24h),
 			period: use24h ? "" : formatPeriod(displayTime, tz),
 			dayDelta: getDayDelta(homeZoned, targetZoned),
+			abbreviation: getTimezoneAbbreviation(tz, displayTime),
+			dst: isDST(tz, displayTime),
 		});
 	}
 

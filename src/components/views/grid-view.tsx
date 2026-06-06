@@ -10,6 +10,7 @@ import {
 import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import type { Zone } from "@/lib/zones";
 import * as m from "motion/react-m";
+import { useMemo } from "react";
 
 export function GridView({
 	zones,
@@ -32,9 +33,11 @@ export function GridView({
 	onSetHome: (id: string) => void;
 	ambientMode?: boolean;
 }) {
-	const home = zones.filter((z) => z.id === homeId);
-	const others = zones.filter((z) => z.id !== homeId);
-	const sorted = [...home, ...others];
+	const sorted = useMemo(() => {
+		const home = zones.filter((z) => z.id === homeId);
+		const others = zones.filter((z) => z.id !== homeId);
+		return [...home, ...others];
+	}, [zones, homeId]);
 
 	return (
 		<div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6">

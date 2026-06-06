@@ -39,7 +39,7 @@ export function useZonesStore() {
 	);
 
 	const homeZone = state.zones.find((z) => z.id === state.homeId);
-	const homeTz = homeZone?.tz ?? "America/Lima";
+	const homeTz = homeZone?.tz ?? "Asia/Karachi";
 
 	return {
 		...state,

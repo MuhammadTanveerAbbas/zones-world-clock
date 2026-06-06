@@ -16,7 +16,6 @@ export function CompactView({
 	isScrubbing: boolean;
 	ambientMode?: boolean;
 	displayTime?: Date;
-	homeTz?: string;
 }) {
 	return (
 		<div className="flex-1 overflow-y-auto scrollbar-hide p-2 sm:p-6 md:p-10">

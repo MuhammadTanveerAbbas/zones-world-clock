@@ -23,6 +23,39 @@ export function getDeltaHours(
 	return (targetOffset - baseOffset) / (60 * 60 * 1000);
 }
 
+export function formatDate(date: Date, tz: string): string {
+	try {
+		return formatInTimeZone(date, tz, "EEE, MMM d");
+	} catch {
+		return "";
+	}
+}
+
+export function getTimezoneAbbreviation(tz: string, date: Date): string {
+	try {
+		const formatter = new Intl.DateTimeFormat("en", {
+			timeZone: tz,
+			timeZoneName: "short",
+		});
+		const parts = formatter.formatToParts(date);
+		return parts.find((p) => p.type === "timeZoneName")?.value || "";
+	} catch {
+		return "";
+	}
+}
+
+export function isDST(tz: string, date: Date): boolean {
+	try {
+		const jan = new Date(date.getFullYear(), 0, 1);
+		const jul = new Date(date.getFullYear(), 6, 1);
+		const janOffset = getTimezoneOffset(tz, jan);
+		const julOffset = getTimezoneOffset(tz, jul);
+		return janOffset !== julOffset;
+	} catch {
+		return false;
+	}
+}
+
 /**
  * Compares the calendar day between two zoned dates.
  * Uses UTC date values from the zoned representations to avoid

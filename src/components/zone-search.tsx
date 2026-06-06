@@ -5,6 +5,15 @@ import { searchTimezones } from "@/lib/tz-metadata";
 import type { Zone } from "@/lib/zones";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+function useDebounce(value: string, delay: number): string {
+	const [debounced, setDebounced] = useState(value);
+	useEffect(() => {
+		const id = setTimeout(() => setDebounced(value), delay);
+		return () => clearTimeout(id);
+	}, [value, delay]);
+	return debounced;
+}
+
 export function ZoneSearch({
 	onAdd,
 	onClose,
@@ -16,22 +25,47 @@ export function ZoneSearch({
 }) {
 	const [query, setQuery] = useState("");
 	const inputRef = useRef<HTMLInputElement>(null);
+	const debouncedQuery = useDebounce(query, 150);
+	const [now, setNow] = useState(() => new Date());
+	const [selectedIndex, setSelectedIndex] = useState(-1);
 
-	// Stable reference time for the search results list
-	const now = useMemo(() => new Date(), []);
-	const results = searchTimezones(query);
+	useEffect(() => {
+		const id = setInterval(() => setNow(new Date()), 60000);
+		return () => clearInterval(id);
+	}, []);
+
+	const results = useMemo(() => searchTimezones(debouncedQuery), [debouncedQuery]);
 
 	useEffect(() => {
 		inputRef.current?.focus();
 	}, []);
 
 	useEffect(() => {
+		setSelectedIndex(-1);
+	}, [debouncedQuery]);
+
+	useEffect(() => {
 		function handleKeyDown(e: KeyboardEvent) {
-			if (e.key === "Escape") onClose();
+			if (e.key === "Escape") {
+				onClose();
+				return;
+			}
+			if (e.key === "ArrowDown") {
+				e.preventDefault();
+				setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
+			}
+			if (e.key === "ArrowUp") {
+				e.preventDefault();
+				setSelectedIndex((prev) => Math.max(prev - 1, -1));
+			}
+			if (e.key === "Enter" && selectedIndex >= 0 && selectedIndex < results.length) {
+				e.preventDefault();
+				handleAdd(results[selectedIndex]);
+			}
 		}
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [onClose]);
+	}, [onClose, results, selectedIndex]);
 
 	const handleAdd = useCallback(
 		(r: (typeof results)[0]) => {
@@ -45,7 +79,7 @@ export function ZoneSearch({
 				tz: r.tz,
 			});
 		},
-		[onAdd, existingIds, results],
+		[onAdd, existingIds],
 	);
 
 	return (
@@ -53,12 +87,12 @@ export function ZoneSearch({
 			role="dialog"
 			aria-modal="true"
 			aria-label="Add timezone"
-			className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/70 backdrop-blur-md animate-in fade-in duration-200"
+			className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/70 backdrop-blur-md animate-fade-in"
 			onClick={(e) => {
 				if (e.target === e.currentTarget) onClose();
 			}}
 		>
-			<div className="w-full max-w-lg mx-4 border border-(--color-border) bg-(--color-background) rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-4 duration-300">
+			<div className="w-full max-w-lg mx-4 border border-(--color-border) bg-(--color-background) rounded-xl shadow-2xl overflow-hidden animate-slide-up">
 				<div className="p-5 border-b border-(--color-border) bg-(--color-foreground)/[0.02]">
 					<input
 						ref={inputRef}
@@ -75,17 +109,17 @@ export function ZoneSearch({
 					role="listbox"
 					aria-label="Timezone results"
 				>
-					{query && results.length === 0 && (
+					{debouncedQuery && results.length === 0 && (
 						<div className="p-4 text-center font-mono text-sm text-(--color-muted-foreground)">
 							No timezones found
 						</div>
 					)}
-					{!query && (
+					{!debouncedQuery && (
 						<div className="p-4 text-center font-mono text-sm text-(--color-muted-foreground)">
 							Start typing to search
 						</div>
 					)}
-					{results.map((r) => {
+					{results.map((r, i) => {
 						const id = r.tz.toLowerCase().replace(/\//g, "-");
 						const alreadyAdded = existingIds.has(id);
 
@@ -94,13 +128,15 @@ export function ZoneSearch({
 								key={r.tz}
 								type="button"
 								role="option"
-								aria-selected={alreadyAdded}
+								aria-selected={selectedIndex === i}
 								onClick={() => handleAdd(r)}
 								disabled={alreadyAdded}
 								className={`w-full flex items-center justify-between px-5 py-3.5 border-b border-(--color-border-subtle) transition-all duration-150 ${
 									alreadyAdded
 										? "opacity-40 cursor-not-allowed"
-										: "hover:bg-(--color-accent)/[0.06] hover:border-(--color-accent)/20 cursor-pointer"
+										: selectedIndex === i
+											? "bg-(--color-accent)/[0.08] border-(--color-accent)/30 cursor-pointer"
+											: "hover:bg-(--color-accent)/[0.06] hover:border-(--color-accent)/20 cursor-pointer"
 								}`}
 							>
 								<div className="flex items-center gap-3 min-w-0">
@@ -137,7 +173,7 @@ export function ZoneSearch({
 				</div>
 				<div className="p-4 border-t border-(--color-border) flex justify-between items-center bg-(--color-foreground)/[0.02]">
 					<span className="font-mono text-[10px] uppercase tracking-widest text-(--color-muted-foreground)">
-						esc to close
+						{results.length > 0 ? `↑↓ navigate · enter add · ` : ""}esc to close
 					</span>
 					<button
 						type="button"

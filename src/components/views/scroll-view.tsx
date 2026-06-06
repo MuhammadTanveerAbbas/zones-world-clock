@@ -3,13 +3,17 @@
 import {
 	formatPeriod,
 	formatTime,
+	formatDate,
 	getDayDelta,
 	getDeltaHours,
 	getZonedTime,
+	getTimezoneAbbreviation,
+	isDST,
 } from "@/lib/time-utils";
 import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import type { Zone } from "@/lib/zones";
 import { Reorder } from "motion/react";
+import { useMemo } from "react";
 
 export function ScrollView({
 	zones,
@@ -34,9 +38,11 @@ export function ScrollView({
 	onReorder: (ids: string[]) => void;
 	ambientMode?: boolean;
 }) {
-	const home = zones.filter((z) => z.id === homeId);
-	const others = zones.filter((z) => z.id !== homeId);
-	const sorted = [...home, ...others];
+	const sorted = useMemo(() => {
+		const home = zones.filter((z) => z.id === homeId);
+		const others = zones.filter((z) => z.id !== homeId);
+		return [...home, ...others];
+	}, [zones, homeId]);
 
 	return (
 		<div className="flex-1 overflow-y-auto">
@@ -56,6 +62,9 @@ export function ScrollView({
 					const dayDelta = isHome ? 0 : getDayDelta(homeZoned, targetZoned);
 					const timeStr = formatTime(displayTime, zone.tz, use24h);
 					const period = use24h ? "" : formatPeriod(displayTime, zone.tz);
+					const abbrev = getTimezoneAbbreviation(zone.tz, displayTime);
+					const dst = isDST(zone.tz, displayTime);
+					const dateStr = formatDate(displayTime, zone.tz);
 					const deltaSign = delta > 0 ? "+" : "";
 					const deltaStr = delta !== 0 ? `${deltaSign}${delta}h` : "";
 					const ambientGradient = ambientMode
@@ -104,8 +113,9 @@ export function ScrollView({
 														lineHeight: 1,
 													}}
 												>
-													{timeStr}
-												</div>
+												{timeStr}
+											</div>
+											<div className="flex flex-col items-end">
 												{period && (
 													<span
 														className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"
@@ -117,12 +127,28 @@ export function ScrollView({
 														{period}
 													</span>
 												)}
+												{dateStr && (
+													<span className="font-mono text-[7px] sm:text-[9px] text-(--color-muted-foreground) tracking-wider mt-0.5">
+														{dateStr}
+													</span>
+												)}
 											</div>
+										</div>
 										</div>
 										<div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
 											<span className="font-mono text-[9px] sm:text-xs md:text-sm text-(--color-muted-foreground) uppercase tracking-widest truncate">
 												{zone.sublabel}
 											</span>
+											{abbrev && (
+												<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
+													{abbrev}
+												</span>
+											)}
+											{dst && (
+												<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-amber-500">
+													🕐 dst
+												</span>
+											)}
 											{isHome && (
 												<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 sm:px-1.5 py-0.5">
 													home
