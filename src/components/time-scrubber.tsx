@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWebHaptics } from "web-haptics/react";
 import { motion, useSpring, useTransform } from "motion/react";
-import { OverlayPanel } from "./overlay-panel";
+import { OverlayPanel } from "./ui/overlay-panel";
+import { audioManager } from "@/lib/audio-manager";
+import { PixelButton } from "./ui/pixel-button";
+import { RewindIcon, ResetIcon } from "./icons";
 
 const TOTAL_LINES = 97;
 const MIN = -720;
@@ -18,20 +21,25 @@ function useScrubSound() {
 	const audioCtxRef = useRef<AudioContext | null>(null);
 
 	const playTick = useCallback(() => {
-		if (!audioCtxRef.current) {
-			audioCtxRef.current = new AudioContext();
-		}
-		const ctx = audioCtxRef.current;
-		const osc = ctx.createOscillator();
-		const gain = ctx.createGain();
-		osc.connect(gain);
-		gain.connect(ctx.destination);
-		osc.type = "sine";
-		osc.frequency.value = 1800;
-		gain.gain.setValueAtTime(0.07, ctx.currentTime);
-		gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-		osc.start(ctx.currentTime);
-		osc.stop(ctx.currentTime + 0.04);
+		try {
+			if (!audioCtxRef.current) {
+				const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+				audioCtxRef.current = new Ctor();
+			}
+			const ctx = audioCtxRef.current;
+			if (ctx.state === "suspended") ctx.resume();
+			const vol = audioManager.getVolume();
+			const osc = ctx.createOscillator();
+			const gain = ctx.createGain();
+			osc.connect(gain);
+			gain.connect(ctx.destination);
+			osc.type = "sine";
+			osc.frequency.value = 1800;
+			gain.gain.setValueAtTime(0.07 * vol, ctx.currentTime);
+			gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+			osc.start(ctx.currentTime);
+			osc.stop(ctx.currentTime + 0.04);
+		} catch {}
 	}, []);
 
 	return playTick;
@@ -121,39 +129,40 @@ export function TimeScrubber({
 	return (
 		<OverlayPanel open={open} onClose={onClose} title="Time Travel" width="lg">
 			<div className="p-4 sm:p-6">
-				<div className="relative flex items-center justify-between mb-3 sm:mb-4 h-6 sm:h-7">
-					<div className="flex items-center gap-2 sm:gap-3">
-						<button
-							type="button"
-							onClick={() => { toggleTimeFormat(); trigger("light"); playTick(); }}
-							className="font-mono text-[8px] sm:text-[10px] uppercase tracking-widest border px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md transition-all duration-200 text-(--color-muted-foreground) border-(--color-border) hover:text-(--color-foreground) hover:border-(--color-accent) hover:bg-accent/10 cursor-pointer"
-						>
-							{use24h ? "24H" : "AM/PM"}
-						</button>
-					</div>
-					<span className="absolute left-1/2 -translate-x-1/2 font-mono text-sm sm:text-base text-(--color-foreground) uppercase">
+				<div className="relative flex items-center justify-between mb-3 sm:mb-4 h-7 sm:h-8">
+					<PixelButton
+						size="sm"
+						variant="outline"
+						onClick={() => { toggleTimeFormat(); trigger("light"); playTick(); }}
+						aria-label="Toggle 24 hour format"
+					>
+						{use24h ? "24H" : "AM/PM"}
+					</PixelButton>
+					<span
+						className={[
+							"absolute left-1/2 -translate-x-1/2 font-mono tracking-widest uppercase",
+							"text-(--color-foreground) tabular-nums",
+							isScrubbing ? "text-base sm:text-lg" : "text-sm sm:text-base",
+						].join(" ")}
+					>
 						{isScrubbing ? `${sign}${offsetHours.toFixed(offsetHours % 1 === 0 ? 0 : 1)}H` : "NOW"}
 					</span>
-					<div className="flex items-center gap-2">
-						<button
-							type="button"
-							onClick={() => { resetScrubber(); trigger("light"); playTick(); }}
-							className={`font-mono text-[8px] sm:text-[10px] uppercase tracking-widest border px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md transition-all duration-200 ${
-								isScrubbing
-									? "text-(--color-muted-foreground) border-(--color-border) hover:text-(--color-foreground) hover:border-(--color-accent) hover:bg-accent/10 cursor-pointer"
-									: "text-transparent border-transparent pointer-events-none"
-							}`}
-							aria-hidden={!isScrubbing}
-							tabIndex={isScrubbing ? 0 : -1}
-						>
-							reset
-						</button>
-					</div>
+					<PixelButton
+						size="sm"
+						variant={isScrubbing ? "outline" : "ghost"}
+						icon={<ResetIcon size={10} />}
+						onClick={() => { resetScrubber(); trigger("light"); playTick(); }}
+						aria-hidden={!isScrubbing}
+						tabIndex={isScrubbing ? 0 : -1}
+						className={!isScrubbing ? "invisible pointer-events-none" : ""}
+					>
+						reset
+					</PixelButton>
 				</div>
 
 				<div
 					ref={containerRef}
-					className="relative h-10 sm:h-12 cursor-ew-resize select-none touch-none"
+					className="relative h-12 sm:h-14 cursor-ew-resize select-none touch-none"
 					onPointerDown={handlePointerDown}
 					onPointerMove={handlePointerMove}
 					onPointerUp={handlePointerUp}
@@ -166,7 +175,7 @@ export function TimeScrubber({
 						animate={{ height: isHovering ? "120%" : "100%", width: isHovering ? 5 : 3 }}
 						transition={{ type: "spring", stiffness: 500, damping: 30 }}
 					>
-						<div className="w-full h-full bg-(--color-foreground) rounded-full shadow-[0_0_8px_var(--color-foreground)/30]" />
+						<div className="w-full h-full bg-(--color-foreground)" />
 					</motion.div>
 
 					<div className="absolute inset-0 flex items-end justify-between px-0 z-10">
@@ -193,7 +202,7 @@ export function TimeScrubber({
 											width: "1px",
 											height: `${height}px`,
 											background: `color-mix(in srgb, var(--fg) ${Math.round(opacity * 100)}%, transparent)`,
-											transition: "height 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), background 0.15s ease",
+											transition: "height 0.18s steps(4, end), background 0.12s steps(2, end)",
 										}}
 									/>
 								</div>
@@ -204,6 +213,18 @@ export function TimeScrubber({
 					<div className="absolute bottom-0 pointer-events-none" style={{ left: "50%", transform: "translateX(-50%)" }}>
 						<div className="w-px h-3 bg-(--color-muted)" />
 					</div>
+
+					<div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 pointer-events-none">
+						<RewindIcon size={12} className="text-(--color-muted-foreground) opacity-60" />
+					</div>
+				</div>
+
+				<div className="mt-3 sm:mt-4 flex items-center justify-center gap-3 font-mono text-[8px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground)">
+					<span>-12H</span>
+					<div className="flex-1 h-px bg-(--color-border)" />
+					<span>NOW</span>
+					<div className="flex-1 h-px bg-(--color-border)" />
+					<span>+12H</span>
 				</div>
 			</div>
 		</OverlayPanel>

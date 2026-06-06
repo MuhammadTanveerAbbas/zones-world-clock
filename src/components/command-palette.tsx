@@ -3,13 +3,15 @@
 import { Command } from "cmdk";
 import { useZonesStore } from "@/hooks/use-zones-store";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { StackIcon, ListIcon, GridIcon, CompactIcon, ClockIcon, DashboardIcon, CmdIcon } from "./icons";
 
 interface Props {
 	open: boolean;
 	onClose: () => void;
+	onToggleDashboard?: () => void;
 }
 
-export function CommandPalette({ open, onClose }: Props) {
+export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 	const { viewMode, setViewMode, toggleTimeFormat } = useZonesStore();
 	const [query, setQuery] = useState("");
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -38,11 +40,11 @@ export function CommandPalette({ open, onClose }: Props) {
 				case "view-grid": setViewMode("grid"); break;
 				case "view-compact": setViewMode("compact"); break;
 				case "toggle-format": toggleTimeFormat(); break;
-				case "toggle-dashboard": break;
+				case "toggle-dashboard": onToggleDashboard?.(); break;
 			}
 			onClose();
 		},
-		[setViewMode, toggleTimeFormat, onClose],
+		[setViewMode, toggleTimeFormat, onToggleDashboard, onClose],
 	);
 
 	const handleOverlayClick = useCallback(
@@ -86,33 +88,45 @@ export function CommandPalette({ open, onClose }: Props) {
 							<Command.Item
 								value="stack-view"
 								onSelect={() => handleSelect("view-stack")}
-								className="font-mono text-[11px] px-3 py-2 rounded-md flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
-								<span>Stack View</span>
+								<div className="flex items-center gap-2">
+									<StackIcon size={14} />
+									<span>Stack View</span>
+								</div>
 								<span className="text-[9px] text-(--color-muted-foreground)">1</span>
 							</Command.Item>
 							<Command.Item
 								value="scroll-view"
 								onSelect={() => handleSelect("view-scroll")}
-								className="font-mono text-[11px] px-3 py-2 rounded-md flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
-								<span>Scroll View</span>
+								<div className="flex items-center gap-2">
+									<ListIcon size={14} />
+									<span>Scroll View</span>
+								</div>
 								<span className="text-[9px] text-(--color-muted-foreground)">2</span>
 							</Command.Item>
 							<Command.Item
 								value="grid-view"
 								onSelect={() => handleSelect("view-grid")}
-								className="font-mono text-[11px] px-3 py-2 rounded-md flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
-								<span>Grid View</span>
+								<div className="flex items-center gap-2">
+									<GridIcon size={14} />
+									<span>Grid View</span>
+								</div>
 								<span className="text-[9px] text-(--color-muted-foreground)">3</span>
 							</Command.Item>
 							<Command.Item
 								value="compact-view"
 								onSelect={() => handleSelect("view-compact")}
-								className="font-mono text-[11px] px-3 py-2 rounded-md flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
-								<span>Compact View</span>
+								<div className="flex items-center gap-2">
+									<CompactIcon size={14} />
+									<span>Compact View</span>
+								</div>
 								<span className="text-[9px] text-(--color-muted-foreground)">4</span>
 							</Command.Item>
 						</Command.Group>
@@ -121,17 +135,23 @@ export function CommandPalette({ open, onClose }: Props) {
 							<Command.Item
 								value="toggle-format"
 								onSelect={() => handleSelect("toggle-format")}
-								className="font-mono text-[11px] px-3 py-2 rounded-md flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
-								<span>Toggle Time Format</span>
+								<div className="flex items-center gap-2">
+									<ClockIcon size={14} />
+									<span>Toggle Time Format</span>
+								</div>
 								<span className="text-[9px] text-(--color-muted-foreground)">T</span>
 							</Command.Item>
 							<Command.Item
 								value="toggle-dashboard"
 								onSelect={() => handleSelect("toggle-dashboard")}
-								className="font-mono text-[11px] px-3 py-2 rounded-md flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
-								<span>Toggle Dashboard</span>
+								<div className="flex items-center gap-2">
+									<DashboardIcon size={14} />
+									<span>Toggle Dashboard</span>
+								</div>
 								<span className="text-[9px] text-(--color-muted-foreground)">D</span>
 							</Command.Item>
 						</Command.Group>
@@ -140,9 +160,12 @@ export function CommandPalette({ open, onClose }: Props) {
 							<Command.Item
 								value="current-view"
 								disabled
-								className="font-mono text-[10px] px-3 py-2 rounded-md text-(--color-muted-foreground) cursor-default"
+								className="font-mono text-[10px] px-3 py-2 text-(--color-muted-foreground) cursor-default"
 							>
-								Current view: {currentViewLabel}
+								<div className="flex items-center gap-2">
+									<CmdIcon size={14} />
+									<span>Current view: {currentViewLabel}</span>
+								</div>
 							</Command.Item>
 						</Command.Group>
 					</Command.List>

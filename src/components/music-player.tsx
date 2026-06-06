@@ -2,31 +2,33 @@
 
 import { audioManager, type AmbientSound } from "@/lib/audio-manager";
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import { OverlayPanel } from "./overlay-panel";
+import { OverlayPanel } from "./ui/overlay-panel";
 import { SoundVisualizer } from "./sound-visualizer";
+import { PixelButton } from "./ui/pixel-button";
+import { VolumeIcon, VolumeMuteIcon, CloseIcon, CheckIcon, PixelRainIcon, PixelWindIcon, PixelOceanIcon, PixelForestIcon, PixelCafeIcon, PixelWhiteNoiseIcon, PixelThunderIcon, PixelNightIcon, PixelFireIcon, PixelStreamIcon, PixelFanIcon, PixelBirdIcon, PixelWaterfallIcon, PixelBowlIcon, PixelBlizzardIcon, PixelTrainIcon, PixelSpaceshipIcon, PixelDesertIcon, PixelRoofIcon } from "./icons";
 
 type SoundCategory = "weather" | "water" | "nature" | "urban" | "ambient" | "fantasy";
 
-const SOUNDS: { value: AmbientSound; label: string; icon: string; category: SoundCategory }[] = [
-	{ value: "rain", label: "Rain", icon: "🌧", category: "weather" },
-	{ value: "rainOnRoof", label: "Rain on Roof", icon: "🏠", category: "weather" },
-	{ value: "thunder", label: "Thunder", icon: "⛈", category: "weather" },
-	{ value: "blizzard", label: "Blizzard", icon: "❄️", category: "weather" },
-	{ value: "wind", label: "Wind", icon: "💨", category: "weather" },
-	{ value: "desert", label: "Desert Wind", icon: "🏜️", category: "weather" },
-	{ value: "ocean", label: "Ocean", icon: "🌊", category: "water" },
-	{ value: "stream", label: "Stream", icon: "💧", category: "water" },
-	{ value: "waterfall", label: "Waterfall", icon: "🏔️", category: "water" },
-	{ value: "forest", label: "Forest", icon: "🌲", category: "nature" },
-	{ value: "birds", label: "Birds", icon: "🐦", category: "nature" },
-	{ value: "night", label: "Night", icon: "🌙", category: "nature" },
-	{ value: "fire", label: "Campfire", icon: "🔥", category: "nature" },
-	{ value: "cafe", label: "Café", icon: "☕", category: "urban" },
-	{ value: "fan", label: "Fan", icon: "🌀", category: "urban" },
-	{ value: "train", label: "Train", icon: "🚂", category: "urban" },
-	{ value: "whiteNoise", label: "White Noise", icon: "📡", category: "ambient" },
-	{ value: "bowl", label: "Meditation Bowl", icon: "🔔", category: "ambient" },
-	{ value: "spaceship", label: "Spaceship", icon: "🚀", category: "fantasy" },
+const SOUNDS: { value: AmbientSound; label: string; icon: React.ReactNode; category: SoundCategory }[] = [
+	{ value: "rain", label: "Rain", icon: <PixelRainIcon size={24} />, category: "weather" },
+	{ value: "rainOnRoof", label: "Rain on Roof", icon: <PixelRoofIcon size={24} />, category: "weather" },
+	{ value: "thunder", label: "Thunder", icon: <PixelThunderIcon size={24} />, category: "weather" },
+	{ value: "blizzard", label: "Blizzard", icon: <PixelBlizzardIcon size={24} />, category: "weather" },
+	{ value: "wind", label: "Wind", icon: <PixelWindIcon size={24} />, category: "weather" },
+	{ value: "desert", label: "Desert Wind", icon: <PixelDesertIcon size={24} />, category: "weather" },
+	{ value: "ocean", label: "Ocean", icon: <PixelOceanIcon size={24} />, category: "water" },
+	{ value: "stream", label: "Stream", icon: <PixelStreamIcon size={24} />, category: "water" },
+	{ value: "waterfall", label: "Waterfall", icon: <PixelWaterfallIcon size={24} />, category: "water" },
+	{ value: "forest", label: "Forest", icon: <PixelForestIcon size={24} />, category: "nature" },
+	{ value: "birds", label: "Birds", icon: <PixelBirdIcon size={24} />, category: "nature" },
+	{ value: "night", label: "Night", icon: <PixelNightIcon size={24} />, category: "nature" },
+	{ value: "fire", label: "Campfire", icon: <PixelFireIcon size={24} />, category: "nature" },
+	{ value: "cafe", label: "Café", icon: <PixelCafeIcon size={24} />, category: "urban" },
+	{ value: "fan", label: "Fan", icon: <PixelFanIcon size={24} />, category: "urban" },
+	{ value: "train", label: "Train", icon: <PixelTrainIcon size={24} />, category: "urban" },
+	{ value: "whiteNoise", label: "White Noise", icon: <PixelWhiteNoiseIcon size={24} />, category: "ambient" },
+	{ value: "bowl", label: "Meditation Bowl", icon: <PixelBowlIcon size={24} />, category: "ambient" },
+	{ value: "spaceship", label: "Spaceship", icon: <PixelSpaceshipIcon size={24} />, category: "fantasy" },
 ];
 
 const CATEGORIES: { key: SoundCategory; label: string }[] = [
@@ -92,16 +94,16 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 			<div className="relative overflow-hidden">
 				<SoundVisualizer active={activeSound !== "none"} />
 				<div className="relative z-10 p-4 sm:p-5 space-y-4">
-					{activeSound !== "none" && (
-						<div className="flex items-center gap-3 p-3 rounded-xl border border-(--color-accent)/20 bg-accent/5 mb-3">
-							<span className="text-2xl">{activeSoundMeta?.icon}</span>
+					{activeSound !== "none" && activeSoundMeta && (
+						<div className="flex items-center gap-3 p-3 border border-(--color-accent) bg-(--color-accent)/[0.05] rounded-lg mb-3">
+							{activeSoundMeta.icon}
 							<div className="flex-1 min-w-0">
-								<div className="font-mono text-[9px] uppercase tracking-widest text-(--color-foreground)">
-									{activeSoundMeta?.label}
+								<div className="font-mono text-[10px] uppercase tracking-widest text-(--color-foreground) font-bold">
+									{activeSoundMeta.label}
 								</div>
-								<div className="h-1.5 rounded-full bg-(--color-muted)/30 mt-1 overflow-hidden">
+								<div className="h-1.5 border border-(--color-border) mt-1 overflow-hidden bg-(--color-muted)/30">
 									<div
-										className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-75"
+										className="h-full bg-(--color-foreground) transition-all duration-75"
 										style={{ width: `${Math.min(100, amplitude * 500)}%` }}
 									/>
 								</div>
@@ -114,18 +116,15 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 
 					<div className="flex gap-1.5 overflow-x-auto pb-1">
 						{CATEGORIES.map((cat) => (
-							<button
+							<PixelButton
 								key={cat.key}
-								type="button"
+								size="sm"
+								variant="outline"
+								active={activeCategory === cat.key}
 								onClick={() => setActiveCategory(cat.key)}
-								className={`font-mono text-[8px] uppercase tracking-widest px-2.5 py-1.5 rounded-md border transition-all shrink-0 cursor-pointer ${
-									activeCategory === cat.key
-										? "text-(--color-foreground) border-(--color-accent) bg-accent/10"
-										: "text-(--color-muted-foreground) border-transparent hover:text-(--color-foreground) hover:border-(--color-border)"
-								}`}
 							>
 								{cat.label}
-							</button>
+							</PixelButton>
 						))}
 					</div>
 
@@ -135,14 +134,15 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 								key={s.value}
 								type="button"
 								onClick={() => handlePlay(s.value)}
-								className={`flex flex-col items-center gap-1.5 p-3 sm:p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${
+								className={[
+									"flex flex-col items-center gap-1.5 p-3 sm:p-3.5 border rounded-lg transition-all duration-75 cursor-pointer",
 									activeSound === s.value
-										? "border-(--color-accent) bg-accent/10 shadow-sm ring-1 ring-(--color-accent)/20"
-										: "border-(--color-border) hover:border-(--color-muted) hover:bg-(--color-foreground)/[0.03]"
-								}`}
+										? "border-(--color-foreground) bg-(--color-foreground) text-(--color-background)"
+										: "border-(--color-border) hover:bg-(--color-foreground)/[0.04] hover:border-(--color-muted) bg-(--color-background)",
+								].join(" ")}
 							>
-								<span className="text-xl sm:text-2xl">{s.icon}</span>
-								<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground) text-center leading-tight">
+								{s.icon}
+								<span className="font-mono text-[8px] uppercase tracking-widest text-center leading-tight">
 									{s.label}
 								</span>
 								{activeSound === s.value && (
@@ -152,9 +152,10 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 											return (
 												<div
 													key={i}
-													className="w-[2px] rounded-full bg-(--color-accent)"
+													className="w-[2px]"
 													style={{
 														height: `${15 + 70 * a}%`,
+														background: "currentColor",
 														opacity: 0.3 + 0.7 * a,
 													}}
 												/>
@@ -167,9 +168,9 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 					</div>
 
 					{activeSound !== "none" && (
-						<div className="flex items-center gap-2 pt-1">
+						<div className="flex items-center gap-2 pt-1 border-t border-(--color-border)">
 							<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground) w-6 shrink-0">
-								vol
+								<VolumeIcon size={12} />
 							</span>
 							<input
 								type="range"
@@ -184,13 +185,14 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 							<span className="font-mono text-[9px] tabular-nums text-(--color-muted-foreground) w-8 text-right">
 								{Math.round(volume * 100)}
 							</span>
-							<button
-								type="button"
+							<PixelButton
+								variant="danger"
+								size="xs"
+								icon={<CloseIcon size={10} />}
 								onClick={() => { audioManager.stop(); setActiveSound("none"); }}
-								className="font-mono text-[8px] uppercase tracking-widest px-2.5 py-1.5 rounded-md border border-(--color-delta-negative) text-(--color-delta-negative) hover:bg-(--color-delta-negative)/10 transition-all cursor-pointer ml-1 shrink-0"
 							>
 								stop
-							</button>
+							</PixelButton>
 						</div>
 					)}
 				</div>

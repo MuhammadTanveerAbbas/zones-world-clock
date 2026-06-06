@@ -48,7 +48,7 @@ export function CompactView({
 							}
 							className={`flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-5 py-2.5 sm:py-4 border rounded-full transition-all duration-200 ${
 								isHomeGroup
-									? "border-accent/40 bg-(--color-accent)/[0.08] shadow-md"
+									? "border-accent/40 bg-(--color-accent)/[0.08] shadow-sm"
 									: "border-(--color-border) hover:border-accent/30 hover:bg-(--color-foreground)/[0.02] hover:shadow-sm"
 							}`}
 						>

@@ -136,6 +136,8 @@ export function sendCompletionNotification(mode: PomodoroMode) {
 	}
 }
 
+let pomodoroServerSnapshot: PomodoroState | null = null;
+
 export const pomodoroStore = {
 	getState(): PomodoroState {
 		init();
@@ -143,7 +145,10 @@ export const pomodoroStore = {
 	},
 
 	getServerState(): PomodoroState {
-		return { ...DEFAULT_POMODORO_STATE };
+		if (!pomodoroServerSnapshot) {
+			pomodoroServerSnapshot = { ...DEFAULT_POMODORO_STATE };
+		}
+		return pomodoroServerSnapshot;
 	},
 
 	subscribe(listener: Listener): () => void {
@@ -164,7 +169,7 @@ export const pomodoroStore = {
 		if (state.phase === "idle") return durationMs;
 		if (state.phase === "paused" && state.pausedRemaining !== null) return state.pausedRemaining;
 		if (state.phase === "running" && state.endTime !== null) {
-			return Math.max(0, Math.round((state.endTime - Date.now()) / 1000) * 1000);
+			return Math.max(0, state.endTime - Date.now());
 		}
 		return durationMs;
 	},

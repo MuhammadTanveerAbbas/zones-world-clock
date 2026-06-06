@@ -6,7 +6,7 @@ export type AmbientSound =
 type SoundState = {
 	stop: () => void;
 	setVolume: (v: number) => void;
-	update?: () => void;
+	cleanup: () => void;
 };
 
 function createLFO(ctx: AudioContext, rate: number, amount: number, target: AudioParam): OscillatorNode {
@@ -123,7 +123,8 @@ class AudioManager {
 
 	private getContext(): AudioContext {
 		if (!this.ctx) {
-			this.ctx = new AudioContext();
+			const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+			this.ctx = new Ctor();
 			this.masterGain = this.ctx.createGain();
 			this.masterGain.gain.value = this._masterVolume;
 			this.masterGain.connect(this.ctx.destination);
@@ -151,8 +152,8 @@ class AudioManager {
 
 	setVolume(vol: number) {
 		this._masterVolume = Math.max(0, Math.min(1, vol));
-		if (this.masterGain) {
-			this.masterGain.gain.setTargetAtTime(this._masterVolume, this.ctx?.currentTime || 0, 0.05);
+		if (this.masterGain && this.ctx) {
+			this.masterGain.gain.setTargetAtTime(this._masterVolume, this.ctx.currentTime, 0.05);
 		}
 		for (const s of this.state.values()) {
 			s.setVolume(this._masterVolume);
@@ -216,6 +217,22 @@ class AudioManager {
 		this.startAmplitudeAnalysis();
 	}
 
+	private registerVolume(base: number, gain: GainNode, extras: GainNode[] = []) {
+		this.setVolume(this._masterVolume);
+		return (v: number) => {
+			gain.gain.setTargetAtTime(v * base, this.ctx?.currentTime || 0, 0.05);
+			for (const e of extras) {
+				e.gain.setTargetAtTime(v * e.gain.value / Math.max(0.01, this._masterVolume || 1), this.ctx?.currentTime || 0, 0.05);
+			}
+		};
+	}
+
+	private registerAll(gain: GainNode) {
+		return (v: number) => {
+			gain.gain.setTargetAtTime(v, this.ctx?.currentTime || 0, 0.05);
+		};
+	}
+
 	// ── Rain ──────────────────────────────────────────────
 	private startRain(ctx: AudioContext, dest: AudioNode) {
 		const noise = createNoiseBuffer(ctx, 6, "pink");
@@ -253,37 +270,33 @@ class AudioManager {
 
 		const drips: { stop: () => void }[] = [];
 		let dripInterval: ReturnType<typeof setInterval> | null = null;
-		const startDrips = () => {
-			dripInterval = setInterval(() => {
-				const osc = ctx.createOscillator();
-				const g = ctx.createGain();
-				osc.type = "sine";
-				osc.frequency.value = 2000 + Math.random() * 2000;
-				g.gain.setValueAtTime(0, ctx.currentTime);
-				g.gain.linearRampToValueAtTime(0.03 + Math.random() * 0.04, ctx.currentTime + 0.005);
-				g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08 + Math.random() * 0.1);
-				const panner = createStereoPanner(ctx);
-				panner.pan.value = Math.random() * 2 - 1;
-				osc.connect(g);
-				g.connect(panner);
-				panner.connect(dest);
-				osc.start(ctx.currentTime);
-				osc.stop(ctx.currentTime + 0.2);
-			}, 150 + Math.random() * 300);
-		};
-		startDrips();
+		dripInterval = setInterval(() => {
+			const osc = ctx.createOscillator();
+			const g = ctx.createGain();
+			osc.type = "sine";
+			osc.frequency.value = 2000 + Math.random() * 2000;
+			g.gain.setValueAtTime(0, ctx.currentTime);
+			g.gain.linearRampToValueAtTime(0.03 + Math.random() * 0.04, ctx.currentTime + 0.005);
+			g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08 + Math.random() * 0.1);
+			const panner = createStereoPanner(ctx);
+			panner.pan.value = Math.random() * 2 - 1;
+			osc.connect(g);
+			g.connect(panner);
+			panner.connect(dest);
+			osc.start(ctx.currentTime);
+			osc.stop(ctx.currentTime + 0.2);
+		}, 150 + Math.random() * 300);
 
 		src.start();
 
 		this.state.set("rain", {
 			stop: () => {
-				src.stop();
-				lfo.stop();
-				lfo2.stop();
-				if (dripInterval) clearInterval(dripInterval);
-				for (const d of drips) d.stop();
+				try { src.stop(); } catch {}
+				try { lfo.stop(); } catch {}
+				try { lfo2.stop(); } catch {}
 			},
-			setVolume: (v: number) => { gain.gain.value = v * 0.25; },
+			cleanup: () => { if (dripInterval) clearInterval(dripInterval); },
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.25, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -327,11 +340,12 @@ class AudioManager {
 
 		this.state.set("wind", {
 			stop: () => {
-				src.stop();
-				lfoFreq.stop();
-				lfoGain2.stop();
+				try { src.stop(); } catch {}
+				try { lfoFreq.stop(); } catch {}
+				try { lfoGain2.stop(); } catch {}
 			},
-			setVolume: (v: number) => { gain.gain.value = v * 0.2; },
+			cleanup: () => {},
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.2, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -389,11 +403,12 @@ class AudioManager {
 
 		this.state.set("ocean", {
 			stop: () => {
-				src.stop();
-				lfo.stop();
-				lfo2.stop();
+				try { src.stop(); } catch {}
+				try { lfo.stop(); } catch {}
+				try { lfo2.stop(); } catch {}
 			},
-			setVolume: (v: number) => { gain.gain.value = v * 0.28; },
+			cleanup: () => {},
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.28, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -456,12 +471,12 @@ class AudioManager {
 
 		this.state.set("forest", {
 			stop: () => {
-				src.stop();
-				lfoRustle.stop();
-				lfoVol.stop();
-				clearInterval(chirpInterval);
+				try { src.stop(); } catch {}
+				try { lfoRustle.stop(); } catch {}
+				try { lfoVol.stop(); } catch {}
 			},
-			setVolume: (v: number) => { gain.gain.value = v * 0.15; },
+			cleanup: () => { clearInterval(chirpInterval); },
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.15, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -529,11 +544,9 @@ class AudioManager {
 		src.start();
 
 		this.state.set("cafe", {
-			stop: () => {
-				src.stop();
-				clearInterval(clutterInterval);
-			},
-			setVolume: (v: number) => { gain.gain.value = v * 0.12; },
+			stop: () => { try { src.stop(); } catch {} },
+			cleanup: () => { clearInterval(clutterInterval); },
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.12, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -559,8 +572,9 @@ class AudioManager {
 		src.start();
 
 		this.state.set("whiteNoise", {
-			stop: () => src.stop(),
-			setVolume: (v: number) => { gain.gain.value = v * 0.06; },
+			stop: () => { try { src.stop(); } catch {} },
+			cleanup: () => {},
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.06, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -588,9 +602,10 @@ class AudioManager {
 		const rumbleInterval = setInterval(() => {
 			const duration = 0.5 + Math.random() * 1.5;
 			const start = ctx.currentTime + Math.random() * 2;
-			gain.gain.setValueAtTime(0.18, start);
-			gain.gain.linearRampToValueAtTime(0.35 + Math.random() * 0.25, start + 0.1);
-			gain.gain.exponentialRampToValueAtTime(0.15, start + duration);
+			const vol = gain.gain.value;
+			gain.gain.setValueAtTime(vol * 0.5, start);
+			gain.gain.linearRampToValueAtTime(vol * 2, start + 0.1);
+			gain.gain.exponentialRampToValueAtTime(vol * 0.3, start + duration);
 
 			lp.frequency.setValueAtTime(120, start);
 			lp.frequency.exponentialRampToValueAtTime(60, start + 0.3);
@@ -599,11 +614,9 @@ class AudioManager {
 		src.start();
 
 		this.state.set("thunder", {
-			stop: () => {
-				src.stop();
-				clearInterval(rumbleInterval);
-			},
-			setVolume: (v: number) => {},
+			stop: () => { try { src.stop(); } catch {} },
+			cleanup: () => { clearInterval(rumbleInterval); },
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.2, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -649,11 +662,9 @@ class AudioManager {
 		src.start();
 
 		this.state.set("night", {
-			stop: () => {
-				src.stop();
-				clearInterval(cricketInterval);
-			},
-			setVolume: (v: number) => { gain.gain.value = v * 0.15; },
+			stop: () => { try { src.stop(); } catch {} },
+			cleanup: () => { clearInterval(cricketInterval); },
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.15, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -713,12 +724,12 @@ class AudioManager {
 
 		this.state.set("fire", {
 			stop: () => {
-				src.stop();
-				lfo.stop();
-				lfo2.stop();
-				clearInterval(crackleInterval);
+				try { src.stop(); } catch {}
+				try { lfo.stop(); } catch {}
+				try { lfo2.stop(); } catch {}
 			},
-			setVolume: (v: number) => { gain.gain.value = v * 0.18; },
+			cleanup: () => { clearInterval(crackleInterval); },
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.18, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -760,8 +771,13 @@ class AudioManager {
 		src.start();
 
 		this.state.set("stream", {
-			stop: () => { src.stop(); lfo.stop(); lfo2.stop(); },
-			setVolume: (v: number) => { gain.gain.value = v * 0.2; },
+			stop: () => {
+				try { src.stop(); } catch {}
+				try { lfo.stop(); } catch {}
+				try { lfo2.stop(); } catch {}
+			},
+			cleanup: () => {},
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.2, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -800,8 +816,15 @@ class AudioManager {
 		src.start();
 
 		this.state.set("fan", {
-			stop: () => { src.stop(); osc.stop(); },
-			setVolume: (v: number) => { gain.gain.value = v * 0.14; oscGain.gain.value = v * 0.03; },
+			stop: () => {
+				try { src.stop(); } catch {}
+				try { osc.stop(); } catch {}
+			},
+			cleanup: () => {},
+			setVolume: (v) => {
+				gain.gain.setTargetAtTime(v * 0.14, ctx.currentTime, 0.05);
+				oscGain.gain.setTargetAtTime(v * 0.03, ctx.currentTime, 0.05);
+			},
 		});
 	}
 
@@ -841,8 +864,9 @@ class AudioManager {
 		}
 		src.start();
 		this.state.set("birds", {
-			stop: () => { src.stop(); intervals.forEach(clearInterval); },
-			setVolume: (v: number) => { gain.gain.value = v * 0.1; },
+			stop: () => { try { src.stop(); } catch {} },
+			cleanup: () => { intervals.forEach(clearInterval); },
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.1, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -864,27 +888,34 @@ class AudioManager {
 		const lfo2 = createLFO(ctx, 0.08, 0.04, gain.gain);
 		src.start();
 		this.state.set("waterfall", {
-			stop: () => { src.stop(); lfo.stop(); lfo2.stop(); },
-			setVolume: (v: number) => { gain.gain.value = v * 0.22; },
+			stop: () => {
+				try { src.stop(); } catch {}
+				try { lfo.stop(); } catch {}
+				try { lfo2.stop(); } catch {}
+			},
+			cleanup: () => {},
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.22, ctx.currentTime, 0.05); },
 		});
 	}
 
 	// ── Meditation Bowl ────────────────────────────────────
 	private startBowl(ctx: AudioContext, dest: AudioNode) {
 		const nodes: OscillatorNode[] = [];
+		const gains: GainNode[] = [];
 		const freqs = [220, 330, 440, 550, 660];
 		freqs.forEach((f, i) => {
 			const osc = ctx.createOscillator();
 			const gain = ctx.createGain();
 			osc.type = "sine";
 			osc.frequency.value = f;
+			const base = 0.04 - i * 0.006;
 			gain.gain.setValueAtTime(0, ctx.currentTime);
-			gain.gain.linearRampToValueAtTime(0.04 - i * 0.006, ctx.currentTime + 0.3);
-			gain.gain.setValueAtTime(0.04 - i * 0.006, ctx.currentTime + 2);
+			gain.gain.linearRampToValueAtTime(base, ctx.currentTime + 0.3);
+			gain.gain.setValueAtTime(base, ctx.currentTime + 2);
 			gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 5 + i * 2);
 			const reverb = createReverb(ctx, 3, 0.5);
 			osc.connect(gain); gain.connect(reverb.input); reverb.output.connect(dest);
-			osc.start(); nodes.push(osc);
+			osc.start(); nodes.push(osc); gains.push(gain);
 		});
 		const strikeInterval = setInterval(() => {
 			const osc = ctx.createOscillator();
@@ -900,8 +931,14 @@ class AudioManager {
 		}, 12000 + Math.random() * 8000);
 
 		this.state.set("bowl", {
-			stop: () => { nodes.forEach(n => { try { n.stop(); } catch {} }); clearInterval(strikeInterval); },
-			setVolume: () => {},
+			stop: () => { nodes.forEach(n => { try { n.stop(); } catch {} }); },
+			cleanup: () => { clearInterval(strikeInterval); },
+			setVolume: (v) => {
+				for (let i = 0; i < gains.length; i++) {
+					const base = 0.04 - i * 0.006;
+					gains[i].gain.setTargetAtTime(v * base, ctx.currentTime, 0.05);
+				}
+			},
 		});
 	}
 
@@ -925,17 +962,23 @@ class AudioManager {
 		const gustInterval = setInterval(() => {
 			const dur = 1 + Math.random() * 3;
 			const t = ctx.currentTime;
-			gain.gain.setValueAtTime(0.15, t);
-			gain.gain.linearRampToValueAtTime(0.35 + Math.random() * 0.2, t + 0.5);
-			gain.gain.exponentialRampToValueAtTime(0.12, t + dur);
+			const vol = gain.gain.value;
+			gain.gain.setValueAtTime(vol * 0.7, t);
+			gain.gain.linearRampToValueAtTime(vol * 1.8, t + 0.5);
+			gain.gain.exponentialRampToValueAtTime(vol * 0.5, t + dur);
 			lp.frequency.setValueAtTime(250, t);
 			lp.frequency.exponentialRampToValueAtTime(80, t + 0.3);
 		}, 4000 + Math.random() * 5000);
 
 		src.start();
 		this.state.set("blizzard", {
-			stop: () => { src.stop(); lfo.stop(); lfo2.stop(); clearInterval(gustInterval); },
-			setVolume: (v: number) => {},
+			stop: () => {
+				try { src.stop(); } catch {}
+				try { lfo.stop(); } catch {}
+				try { lfo2.stop(); } catch {}
+			},
+			cleanup: () => { clearInterval(gustInterval); },
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.2, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -948,6 +991,10 @@ class AudioManager {
 		bp.type = "bandpass"; bp.frequency.value = 200; bp.Q.value = 0.5;
 		const gain = ctx.createGain();
 		gain.gain.value = 0.15;
+		const chugGain = ctx.createGain();
+		chugGain.gain.value = 0.08;
+		const hornGain = ctx.createGain();
+		hornGain.gain.value = 0.05;
 		src.connect(bp); bp.connect(gain); gain.connect(dest);
 		const lfo = createLFO(ctx, 2.2, 80, bp.frequency);
 
@@ -986,25 +1033,32 @@ class AudioManager {
 
 		src.start();
 		this.state.set("train", {
-			stop: () => { src.stop(); lfo.stop(); clearInterval(chugInterval); clearInterval(hornInterval); },
-			setVolume: (v: number) => { gain.gain.value = v * 0.15; },
+			stop: () => { try { src.stop(); } catch {} },
+			cleanup: () => { clearInterval(chugInterval); clearInterval(hornInterval); },
+			setVolume: (v) => {
+				gain.gain.setTargetAtTime(v * 0.15, ctx.currentTime, 0.05);
+				chugGain.gain.setTargetAtTime(v * 0.08, ctx.currentTime, 0.05);
+				hornGain.gain.setTargetAtTime(v * 0.05, ctx.currentTime, 0.05);
+			},
 		});
 	}
 
 	// ── Spaceship ──────────────────────────────────────────
 	private startSpaceship(ctx: AudioContext, dest: AudioNode) {
 		const nodes: OscillatorNode[] = [];
+		const gains: GainNode[] = [];
+		const baseGains = [0.04, 0.032, 0.024, 0.016];
 		[60, 90, 120, 180].forEach((freq, i) => {
 			const osc = ctx.createOscillator();
 			const gain = ctx.createGain();
 			osc.type = i === 0 ? "sawtooth" : "sine";
 			osc.frequency.value = freq;
-			gain.gain.value = 0.04 - i * 0.008;
+			gain.gain.value = baseGains[i];
 			const reverb = createReverb(ctx, 3, 0.4);
 			const pan = createStereoPanner(ctx);
 			pan.pan.value = (i - 1.5) * 0.4;
 			osc.connect(gain); gain.connect(reverb.input); reverb.output.connect(pan); pan.connect(dest);
-			osc.start(); nodes.push(osc);
+			osc.start(); nodes.push(osc); gains.push(gain);
 		});
 
 		const lfo = createLFO(ctx, 0.05, 60, nodes[0].frequency);
@@ -1026,8 +1080,17 @@ class AudioManager {
 		}, 2000 + Math.random() * 3000);
 
 		this.state.set("spaceship", {
-			stop: () => { nodes.forEach(n => { try { n.stop(); } catch {} }); lfo.stop(); lfo2.stop(); clearInterval(beepInterval); },
-			setVolume: () => {},
+			stop: () => { nodes.forEach(n => { try { n.stop(); } catch {} }); },
+			cleanup: () => {
+				clearInterval(beepInterval);
+				try { lfo.stop(); } catch {}
+				try { lfo2.stop(); } catch {}
+			},
+			setVolume: (v) => {
+				for (let i = 0; i < gains.length; i++) {
+					gains[i].gain.setTargetAtTime(v * baseGains[i], ctx.currentTime, 0.05);
+				}
+			},
 		});
 	}
 
@@ -1049,8 +1112,13 @@ class AudioManager {
 		const lfo2 = createLFO(ctx, 0.01, 0.05, gain.gain);
 		src.start();
 		this.state.set("desert", {
-			stop: () => { src.stop(); lfo.stop(); lfo2.stop(); },
-			setVolume: (v: number) => { gain.gain.value = v * 0.12; },
+			stop: () => {
+				try { src.stop(); } catch {}
+				try { lfo.stop(); } catch {}
+				try { lfo2.stop(); } catch {}
+			},
+			cleanup: () => {},
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.12, ctx.currentTime, 0.05); },
 		});
 	}
 
@@ -1086,14 +1154,19 @@ class AudioManager {
 
 		src.start();
 		this.state.set("rainOnRoof", {
-			stop: () => { src.stop(); lfo.stop(); clearInterval(thudInterval); },
-			setVolume: (v: number) => { gain.gain.value = v * 0.18; },
+			stop: () => { try { src.stop(); } catch {} },
+			cleanup: () => {
+				clearInterval(thudInterval);
+				try { lfo.stop(); } catch {}
+			},
+			setVolume: (v) => { gain.gain.setTargetAtTime(v * 0.18, ctx.currentTime, 0.05); },
 		});
 	}
 
 	stop() {
 		for (const s of this.state.values()) {
 			s.stop();
+			s.cleanup();
 		}
 		this.state.clear();
 		this._activeSound = "none";
@@ -1107,18 +1180,13 @@ class AudioManager {
 
 export const audioManager = new AudioManager();
 
-let endChimeCtx: AudioContext | null = null;
-
 export function playSessionEndChime() {
 	try {
-		if (!endChimeCtx) {
-			endChimeCtx = new AudioContext();
-		}
-		if (endChimeCtx.state === "suspended") {
-			endChimeCtx.resume();
-		}
-		const ctx = endChimeCtx;
+		const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+		const ctx = new Ctor();
+		if (ctx.state === "suspended") ctx.resume();
 		const now = ctx.currentTime;
+		const vol = audioManager.getVolume();
 
 		const notes = [523.25, 659.25, 783.99, 1046.5];
 		notes.forEach((freq, i) => {
@@ -1130,11 +1198,15 @@ export function playSessionEndChime() {
 			osc.frequency.value = freq;
 			const t = now + i * 0.12;
 			gain.gain.setValueAtTime(0, t);
-			gain.gain.linearRampToValueAtTime(0.1, t + 0.02);
-			gain.gain.setValueAtTime(0.1, t + 0.15);
+			gain.gain.linearRampToValueAtTime(0.1 * vol, t + 0.02);
+			gain.gain.setValueAtTime(0.1 * vol, t + 0.15);
 			gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
 			osc.start(t);
 			osc.stop(t + 0.5);
 		});
+
+		setTimeout(() => {
+			try { ctx.close(); } catch {}
+		}, 1500);
 	} catch {}
 }

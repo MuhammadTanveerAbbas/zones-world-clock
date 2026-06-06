@@ -2,17 +2,9 @@
 
 import { analyticsStore } from "@/lib/store-analytics";
 import { pomodoroStore, type PomodoroSession } from "@/lib/store-pomodoro";
-import { useSyncExternalStore, useMemo, useState, useCallback } from "react";
+import { useSyncExternalStore, useState, useCallback } from "react";
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { OverlayPanel } from "./overlay-panel";
-
-function useAnalytics() {
-	return useSyncExternalStore(
-		analyticsStore.subscribe,
-		analyticsStore.getState,
-		analyticsStore.getServerState,
-	);
-}
+import { OverlayPanel } from "./ui/overlay-panel";
 
 function formatMinutes(ms: number): string {
 	const min = Math.round(ms / 60000);
@@ -67,16 +59,14 @@ function formatDuration(sec: number): string {
 }
 
 export function Dashboard({ open, onClose }: { open: boolean; onClose: () => void }) {
-	useAnalytics();
-
 	const [showSessions, setShowSessions] = useState(false);
 
-	const todayStats = useMemo(() => analyticsStore.getTodayStats(), []);
-	const weekStats = useMemo(() => analyticsStore.getThisWeekStats(), []);
-	const monthStats = useMemo(() => analyticsStore.getThisMonthStats(), []);
-	const streak = useMemo(() => analyticsStore.getStreak(), []);
-	const last7Days = useMemo(() => analyticsStore.getLast7Days(), []);
-	const recentSessions = useMemo(() => pomodoroStore.getRecentSessions(50), []);
+	const todayStats = analyticsStore.getTodayStats();
+	const weekStats = analyticsStore.getThisWeekStats();
+	const monthStats = analyticsStore.getThisMonthStats();
+	const streak = analyticsStore.getStreak();
+	const last7Days = analyticsStore.getLast7Days();
+	const recentSessions = pomodoroStore.getRecentSessions(50);
 
 	const chartData = last7Days.map((d) => ({
 		day: getDayLabel(d.date),
@@ -99,22 +89,22 @@ export function Dashboard({ open, onClose }: { open: boolean; onClose: () => voi
 		<OverlayPanel open={open} onClose={onClose} title="Dashboard" width="lg">
 			<div className="p-4 sm:p-5 space-y-4">
 				<div className="grid grid-cols-4 gap-2 sm:gap-3">
-					<div className="flex flex-col items-center p-2 sm:p-3 border border-(--color-border) rounded-lg bg-(--color-foreground)/[0.02]">
+					<div className="flex flex-col items-center p-2 sm:p-3 rounded-lg border border-(--color-border) bg-(--color-foreground)/[0.02]">
 						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">today</span>
 						<span className="font-mono text-sm sm:text-base font-bold tabular-nums mt-0.5 text-(--color-foreground)">{formatMinutes(todayStats.focusMs)}</span>
 						<span className="font-mono text-[8px] text-(--color-muted-foreground)">{todayStats.sessions} session{todayStats.sessions !== 1 ? "s" : ""}</span>
 					</div>
-					<div className="flex flex-col items-center p-2 sm:p-3 border border-(--color-border) rounded-lg bg-(--color-foreground)/[0.02]">
+					<div className="flex flex-col items-center p-2 sm:p-3 rounded-lg border border-(--color-border) bg-(--color-foreground)/[0.02]">
 						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">this week</span>
 						<span className="font-mono text-sm sm:text-base font-bold tabular-nums mt-0.5 text-(--color-foreground)">{formatMinutes(weekStats.focusMs)}</span>
 						<span className="font-mono text-[8px] text-(--color-muted-foreground)">{weekStats.sessions} session{weekStats.sessions !== 1 ? "s" : ""}</span>
 					</div>
-					<div className="flex flex-col items-center p-2 sm:p-3 border border-(--color-border) rounded-lg bg-(--color-foreground)/[0.02]">
+					<div className="flex flex-col items-center p-2 sm:p-3 rounded-lg border border-(--color-border) bg-(--color-foreground)/[0.02]">
 						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">this month</span>
 						<span className="font-mono text-sm sm:text-base font-bold tabular-nums mt-0.5 text-(--color-foreground)">{formatMinutes(monthStats.focusMs)}</span>
 						<span className="font-mono text-[8px] text-(--color-muted-foreground)">{monthStats.sessions} session{monthStats.sessions !== 1 ? "s" : ""}</span>
 					</div>
-					<div className="flex flex-col items-center p-2 sm:p-3 border border-(--color-border) rounded-lg bg-(--color-foreground)/[0.02]">
+					<div className="flex flex-col items-center p-2 sm:p-3 rounded-lg border border-(--color-border) bg-(--color-foreground)/[0.02]">
 						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">streak</span>
 						<span className="font-mono text-sm sm:text-base font-bold tabular-nums mt-0.5 text-(--color-foreground)">{streak}d</span>
 						<span className="font-mono text-[8px] text-(--color-muted-foreground)">days</span>
@@ -165,7 +155,7 @@ export function Dashboard({ open, onClose }: { open: boolean; onClose: () => voi
 						{recentSessions.map((s) => (
 							<div key={s.id} className="flex items-center justify-between font-mono text-[9px] px-2 py-1 rounded hover:bg-(--color-foreground)/[0.03]">
 								<div className="flex items-center gap-2">
-									<span className={`w-1 h-1 rounded-full ${s.mode === "focus" ? "bg-green-400" : "bg-(--color-muted)"}`} />
+									<div className={`w-1.5 h-1.5 ${s.mode === "focus" ? "bg-(--color-delta-positive)" : "bg-(--color-muted)"}`} />
 									<span className="text-(--color-foreground)">{sessionLabel(s.mode)}</span>
 									<span className="text-(--color-muted-foreground)">{formatSessionTime(s.completedAt)}</span>
 								</div>

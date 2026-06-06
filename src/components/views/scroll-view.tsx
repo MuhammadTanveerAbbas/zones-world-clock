@@ -14,6 +14,7 @@ import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import type { Zone } from "@/lib/zones";
 import { Reorder } from "motion/react";
 import { useMemo } from "react";
+import { DstIcon } from "../icons";
 
 export function ScrollView({
 	zones,
@@ -87,8 +88,8 @@ export function ScrollView({
 							}
 							className={`group relative border border-(--color-border) rounded-lg transition-all duration-200 px-2 sm:px-5 md:px-8 py-2.5 sm:py-5 ${
 								isHome
-									? "border-l-4 border-l-(--color-accent) bg-(--color-accent)/[0.05] shadow-sm"
-									: "hover:bg-(--color-foreground)/[0.02] hover:shadow-md hover:border-(--color-muted) cursor-grab active:cursor-grabbing"
+									? "border-l-4 border-l-(--color-accent) bg-(--color-accent)/[0.05]"
+									: "hover:bg-(--color-foreground)/[0.02] hover:border-(--color-muted) cursor-grab active:cursor-grabbing"
 							}`}
 						>
 							<div className="flex items-center justify-between">
@@ -113,90 +114,91 @@ export function ScrollView({
 														lineHeight: 1,
 													}}
 												>
-												{timeStr}
-											</div>
-											<div className="flex flex-col items-end">
-												{period && (
-													<span
-														className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"
-														style={{
-															fontSize: "clamp(8px, 1.5vw, 20px)",
-															lineHeight: 1,
-														}}
-													>
-														{period}
-													</span>
-												)}
-												{dateStr && (
-													<span className="font-mono text-[7px] sm:text-[9px] text-(--color-muted-foreground) tracking-wider mt-0.5">
-														{dateStr}
-													</span>
-												)}
-											</div>
-										</div>
-										</div>
-										<div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
-											<span className="font-mono text-[9px] sm:text-xs md:text-sm text-(--color-muted-foreground) uppercase tracking-widest truncate">
-												{zone.sublabel}
-											</span>
-											{abbrev && (
-												<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
-													{abbrev}
-												</span>
-											)}
-											{dst && (
-												<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-amber-500">
-													🕐 dst
-												</span>
-											)}
-											{isHome && (
-												<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 sm:px-1.5 py-0.5">
-													home
-												</span>
-											)}
-											{deltaStr && (
-												<span
-													className={`font-mono text-xs sm:text-base md:text-lg font-bold tracking-wider ${
-														delta > 0
-															? "text-(--color-delta-positive)"
-															: "text-(--color-delta-negative)"
-													}`}
-												>
-													{deltaStr}
-												</span>
-											)}
-											{dayDelta !== 0 && (
-												<span
-													className={`font-mono text-[10px] sm:text-sm font-bold ${
-														dayDelta > 0
-															? "text-(--color-delta-positive)"
-															: "text-(--color-delta-negative)"
-													}`}
-												>
-													{dayDelta > 0 ? "+1d" : "-1d"}
-												</span>
-											)}
-											{!isHome && (
-												<div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-													<button
-														type="button"
-														onClick={() => onSetHome(zone.id)}
-														className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
-													>
-														set home
-													</button>
-													<button
-														type="button"
-														onClick={() => onRemove(zone.id)}
-														className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
-													>
-														×
-													</button>
+													{timeStr}
 												</div>
-											)}
+												<div className="flex flex-col items-end">
+													{period && (
+														<span
+															className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"
+															style={{
+																fontSize: "clamp(8px, 1.5vw, 20px)",
+																lineHeight: 1,
+															}}
+														>
+															{period}
+														</span>
+													)}
+													{dateStr && (
+														<span className="font-mono text-[7px] sm:text-[9px] text-(--color-muted-foreground) tracking-wider mt-0.5">
+															{dateStr}
+														</span>
+													)}
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
+							</div>
+							<div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
+								<span className="font-mono text-[9px] sm:text-xs md:text-sm text-(--color-muted-foreground) uppercase tracking-widest truncate">
+									{zone.sublabel}
+								</span>
+								{abbrev && (
+									<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
+										{abbrev}
+									</span>
+								)}
+								{dst && (
+									<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-amber-500 flex items-center gap-0.5">
+										<DstIcon size={10} />
+										dst
+									</span>
+								)}
+								{isHome && (
+									<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded">
+										home
+									</span>
+								)}
+								{deltaStr && (
+									<span
+										className={`font-mono text-xs sm:text-base md:text-lg font-bold tracking-wider ${
+											delta > 0
+												? "text-(--color-delta-positive)"
+												: "text-(--color-delta-negative)"
+										}`}
+									>
+										{deltaStr}
+									</span>
+								)}
+								{dayDelta !== 0 && (
+									<span
+										className={`font-mono text-[10px] sm:text-sm font-bold ${
+											dayDelta > 0
+												? "text-(--color-delta-positive)"
+												: "text-(--color-delta-negative)"
+										}`}
+									>
+										{dayDelta > 0 ? "+1d" : "-1d"}
+									</span>
+								)}
+								{!isHome && (
+									<div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+										<button
+											type="button"
+											onClick={() => onSetHome(zone.id)}
+											className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
+										>
+											set home
+										</button>
+										<button
+											type="button"
+											onClick={() => onRemove(zone.id)}
+											className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
+										>
+											&times;
+										</button>
+									</div>
+								)}
 							</div>
 						</Reorder.Item>
 					);

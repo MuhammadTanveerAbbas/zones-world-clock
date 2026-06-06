@@ -1,18 +1,45 @@
 "use client";
 
-import { useClickSound } from "@/hooks/use-click-sound";
 import type { ViewMode } from "@/lib/store";
 import { ThemeSwitcher } from "./theme-switcher";
-import { useState, useEffect, useRef } from "react";
+import { useSyncExternalStore } from "react";
 import { audioManager, type AmbientSound } from "@/lib/audio-manager";
 import { pomodoroStore } from "@/lib/store-pomodoro";
+import { PixelButton, PixelBadge } from "./ui/pixel-button";
+import {
+	ChartIcon,
+	ClockIcon,
+	CompactIcon,
+	GridIcon,
+	ListIcon,
+	PlusIcon,
+	RewindIcon,
+	SpeakerIcon,
+	StackIcon,
+	StopwatchIcon,
+} from "./icons";
+import type { ReactNode } from "react";
 
-const VIEWS: { mode: ViewMode; label: string; shortLabel: string }[] = [
-	{ mode: "stack", label: "Stack", shortLabel: "St" },
-	{ mode: "scroll", label: "List", shortLabel: "Li" },
-	{ mode: "grid", label: "Grid", shortLabel: "Gr" },
-	{ mode: "compact", label: "Mini", shortLabel: "Mi" },
+const VIEWS: { mode: ViewMode; label: string; shortLabel: string; icon: ReactNode }[] = [
+	{ mode: "stack", label: "Stack", shortLabel: "St", icon: <StackIcon size={12} /> },
+	{ mode: "scroll", label: "List", shortLabel: "Li", icon: <ListIcon size={12} /> },
+	{ mode: "grid", label: "Grid", shortLabel: "Gr", icon: <GridIcon size={12} /> },
+	{ mode: "compact", label: "Mini", shortLabel: "Mi", icon: <CompactIcon size={12} /> },
 ];
+
+function usePomodoroLive() {
+	return useSyncExternalStore(pomodoroStore.subscribe, pomodoroStore.getState, pomodoroStore.getServerState);
+}
+
+const SOUND_LABELS: Record<AmbientSound, string> = {
+	none: "None",
+	rain: "Rain", forest: "Forest", cafe: "Cafe", ocean: "Ocean",
+	wind: "Wind", whiteNoise: "White Noise", thunder: "Thunder",
+	night: "Night", fire: "Campfire", stream: "Stream", fan: "Fan",
+	birds: "Birds", waterfall: "Waterfall", bowl: "Bowl",
+	blizzard: "Blizzard", train: "Train", spaceship: "Spaceship",
+	desert: "Desert", rainOnRoof: "Rain on Roof",
+};
 
 export function ViewSwitcher({
 	current,
@@ -31,120 +58,87 @@ export function ViewSwitcher({
 	activePanel: "pomodoro" | "sounds" | "scrubber" | "dashboard" | null;
 	onPanelChange: (panel: "pomodoro" | "sounds" | "scrubber" | "dashboard" | null) => void;
 }) {
-	const playClick = useClickSound();
-	const [pomodoroActive, setPomodoroActive] = useState(false);
-	const [soundActive, setSoundActive] = useState(false);
-	const [activeSoundLabel, setActiveSoundLabel] = useState("");
-	const nowPlayingRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const unsubPomo = pomodoroStore.subscribe(() => {
-			setPomodoroActive(pomodoroStore.getState().phase === "running");
-		});
-		return unsubPomo;
-	}, []);
-
-	useEffect(() => {
-		const id = setInterval(() => {
-			const isPlaying = audioManager.isPlaying();
-			setSoundActive(isPlaying);
-			if (isPlaying) {
-				const sound = audioManager.activeSound;
-				const labels: Record<string, string> = {
-					rain: "Rain", forest: "Forest", cafe: "Café", ocean: "Ocean",
-					wind: "Wind", whiteNoise: "White Noise", thunder: "Thunder",
-					night: "Night", fire: "Campfire", stream: "Stream", fan: "Fan",
-					birds: "Birds", waterfall: "Waterfall", bowl: "Meditation Bowl",
-					blizzard: "Blizzard", train: "Train", spaceship: "Spaceship",
-					desert: "Desert Wind", rainOnRoof: "Rain on Roof",
-				};
-				setActiveSoundLabel(labels[sound] || sound);
-			} else {
-				setActiveSoundLabel("");
-			}
-		}, 500);
-		return () => clearInterval(id);
-	}, []);
+	const pomoState = usePomodoroLive();
+	const pomoRunning = pomoState.phase === "running";
+	const sound = audioManager.activeSound;
+	const soundActive = sound !== "none";
+	const soundLabel = soundActive ? (SOUND_LABELS[sound] ?? sound) : "";
 
 	return (
 		<>
 			<nav
 				aria-label="View controls"
-				className="flex items-center justify-between px-2 sm:px-4 py-1.5 sm:py-2 border-b border-(--color-border) gap-1 bg-(--color-background)"
+				className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 border-b-2 border-(--color-border) gap-1 bg-(--color-surface) relative z-30"
 			>
 				<div className="flex items-center gap-0.5 sm:gap-1" role="tablist" aria-label="View modes">
-					{VIEWS.map(({ mode, label, shortLabel }) => (
-						<button
+					{VIEWS.map(({ mode, label, shortLabel, icon }) => (
+						<PixelButton
 							key={mode}
-							type="button"
+							variant="outline"
+							size="sm"
+							active={current === mode}
+							icon={icon}
+							onClick={() => onChange(mode)}
 							role="tab"
 							aria-selected={current === mode}
-							onClick={() => { onChange(mode); playClick(); }}
-							className={`font-mono text-[9px] sm:text-[10px] uppercase tracking-widest px-1.5 sm:px-2.5 py-1 sm:py-1.5 border rounded-md transition-all duration-200 cursor-pointer shrink-0 ${
-								current === mode
-									? "text-(--color-foreground) border-(--color-accent) bg-accent/10 shadow-sm"
-									: "text-(--color-muted-foreground) border-transparent hover:text-(--color-foreground) hover:bg-(--color-foreground)/[0.04]"
-							}`}
+							aria-label={label}
+							className="sm:[&_span]:inline-block"
 						>
 							<span className="sm:hidden">{shortLabel}</span>
 							<span className="hidden sm:inline">{label}</span>
-						</button>
+						</PixelButton>
 					))}
 				</div>
 
 				<div className="flex items-center gap-1 sm:gap-1.5">
 					<ToolbarButton
 						label="Pomodoro"
-						shortLabel="Po"
-						icon={pomodoroActive ? "⏱" : "⏲"}
+						icon={pomoRunning ? <StopwatchIcon size={12} /> : <ClockIcon size={12} />}
 						active={activePanel === "pomodoro"}
-						isLive={pomodoroActive}
+						isLive={pomoRunning}
 						onClick={() => onPanelChange(activePanel === "pomodoro" ? null : "pomodoro")}
 					/>
 					<ToolbarButton
 						label="Sounds"
-						shortLabel="So"
-						icon="🔊"
+						icon={<SpeakerIcon size={12} />}
 						active={activePanel === "sounds"}
 						isLive={soundActive}
 						onClick={() => onPanelChange(activePanel === "sounds" ? null : "sounds")}
 					/>
 					<ToolbarButton
 						label="Scrubber"
-						shortLabel="Sc"
-						icon="⏪"
+						icon={<RewindIcon size={12} />}
 						active={activePanel === "scrubber"}
 						onClick={() => onPanelChange(activePanel === "scrubber" ? null : "scrubber")}
 					/>
 					<ToolbarButton
 						label="Stats"
-						shortLabel="Da"
-						icon="📊"
+						icon={<ChartIcon size={12} />}
 						active={activePanel === "dashboard"}
 						onClick={() => onPanelChange(activePanel === "dashboard" ? null : "dashboard")}
 					/>
 
-					<div className="w-px h-4 bg-(--color-border) mx-1 hidden sm:block" />
+					<div className="w-px h-4 bg-(--color-border) mx-0.5 sm:mx-1 hidden sm:block" />
 
 					<ThemeSwitcher ambientMode={ambientMode} onToggleAmbient={onToggleAmbient} />
-					<button
-						type="button"
+					<PixelButton
+						variant="primary"
+						size="sm"
+						icon={<PlusIcon size={12} />}
+						onClick={onAddZone}
 						aria-label="Add timezone"
-						onClick={() => { onAddZone(); playClick(); }}
-						className="font-mono text-[11px] sm:text-[13px] px-1.5 sm:px-2.5 py-1 sm:py-1.5 border border-(--color-accent) text-(--color-accent) hover:bg-(--color-accent) hover:text-white cursor-pointer transition-all duration-200 shrink-0 rounded-md"
 					>
-						+
-					</button>
+						<span className="hidden sm:inline">add</span>
+					</PixelButton>
 				</div>
 			</nav>
-			{soundActive && activeSoundLabel && (
+			{soundActive && soundLabel && (
 				<div
-					ref={nowPlayingRef}
-					className="flex items-center justify-center gap-1.5 px-3 py-1 bg-(--color-accent)/5 border-b border-(--color-border)/50"
+					className="flex items-center justify-center gap-2 px-3 py-1 bg-(--color-surface) border-b-2 border-(--color-border) relative z-20"
 				>
-					<span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse-soft shrink-0" />
-					<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
-						playing: <span className="text-(--color-foreground)">{activeSoundLabel}</span>
+					<span className="w-1.5 h-1.5 bg-(--color-delta-positive) animate-pulse-dot shrink-0" />
+					<span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground)">
+						playing: <span className="text-(--color-foreground)">{soundLabel}</span>
 					</span>
 				</div>
 			)}
@@ -154,35 +148,37 @@ export function ViewSwitcher({
 
 function ToolbarButton({
 	label,
-	shortLabel,
 	icon,
 	active,
 	isLive,
 	onClick,
 }: {
 	label: string;
-	shortLabel: string;
-	icon: string;
+	icon: ReactNode;
 	active: boolean;
 	isLive?: boolean;
 	onClick: () => void;
 }) {
 	return (
-		<button
-			type="button"
-			aria-label={label}
-			onClick={onClick}
-			className={`relative flex items-center gap-1 sm:gap-1.5 font-mono text-[9px] sm:text-[10px] uppercase tracking-widest px-1.5 sm:px-2.5 py-1 sm:py-1.5 border rounded-md transition-all duration-200 cursor-pointer shrink-0 ${
-				active
-					? "text-(--color-foreground) border-(--color-accent) bg-accent/10 shadow-sm"
-					: "text-(--color-muted-foreground) border-transparent hover:text-(--color-foreground) hover:bg-(--color-foreground)/[0.04]"
-			}`}
-		>
+		<div className="relative">
+			<PixelButton
+				variant="outline"
+				size="sm"
+				active={active}
+				icon={icon}
+				onClick={onClick}
+				aria-label={label}
+			>
+				<span className="hidden sm:inline">{label}</span>
+			</PixelButton>
 			{isLive && (
-				<span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+				<PixelBadge
+					variant="success"
+					className="absolute -top-1 -right-1 !p-0 !px-1 !text-[7px] !leading-none !h-2 !min-h-0"
+				>
+					<span className="block w-1.5 h-1.5 bg-(--color-delta-positive) animate-pulse-dot" />
+				</PixelBadge>
 			)}
-			<span className="text-[11px] sm:text-[13px]">{icon}</span>
-			<span className="hidden sm:inline">{label}</span>
-		</button>
+		</div>
 	);
 }

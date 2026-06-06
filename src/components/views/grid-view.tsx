@@ -75,7 +75,7 @@ export function GridView({
 							}
 							className={`group relative flex flex-col gap-2 sm:gap-4 p-2.5 sm:p-5 md:p-6 border border-(--color-border) rounded-lg transition-all duration-200 ${
 								isHome
-									? "sm:col-span-2 border-l-4 border-l-(--color-accent) bg-(--color-accent)/[0.05] shadow-md"
+									? "sm:col-span-2 border-l-4 border-l-(--color-accent) bg-(--color-accent)/[0.05] shadow-sm"
 									: "hover:bg-(--color-foreground)/[0.02] hover:shadow-md hover:border-(--color-muted)"
 							}`}
 						>
@@ -84,16 +84,16 @@ export function GridView({
 									<button
 										type="button"
 										onClick={() => onSetHome(zone.id)}
-										className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
+										className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
 									>
 										set home
 									</button>
 									<button
 										type="button"
 										onClick={() => onRemove(zone.id)}
-										className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
+										className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
 									>
-										×
+										&times;
 									</button>
 								</div>
 							)}
@@ -116,7 +116,7 @@ export function GridView({
 											{zone.sublabel}
 										</span>
 										{isHome && (
-											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5">
+											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
 												home
 											</span>
 										)}

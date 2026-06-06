@@ -209,23 +209,29 @@ export type TzSearchResult = {
 	countryName: string;
 };
 
+let cachedTimezones: TzSearchResult[] | null = null;
+
+function getAllTimezones(): TzSearchResult[] {
+	if (cachedTimezones) return cachedTimezones;
+	const allTz = Intl.supportedValuesOf("timeZone");
+	cachedTimezones = allTz.map((tz) => {
+		const countryCode = getCountryCode(tz);
+		return {
+			tz,
+			city: getCityName(tz),
+			region: getRegionName(tz),
+			countryCode,
+			countryName: getCountryName(countryCode),
+		};
+	});
+	return cachedTimezones;
+}
+
 export function searchTimezones(query: string): TzSearchResult[] {
 	if (!query.trim()) return [];
 
 	const q = query.toLowerCase();
-	const allTz = Intl.supportedValuesOf("timeZone");
-
-	return allTz
-		.map((tz) => {
-			const countryCode = getCountryCode(tz);
-			return {
-				tz,
-				city: getCityName(tz),
-				region: getRegionName(tz),
-				countryCode,
-				countryName: getCountryName(countryCode),
-			};
-		})
+	return getAllTimezones()
 		.filter(
 			(r) =>
 				r.city.toLowerCase().includes(q) ||

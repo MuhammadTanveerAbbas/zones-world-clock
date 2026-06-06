@@ -15,6 +15,7 @@ import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { groupZones } from "@/lib/group-zones";
 import { LazyMotion, domAnimation, AnimatePresence, motion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
+import { GlobeIcon } from "@/components/icons";
 
 const PomodoroTimer = dynamic(
 	() => import("@/components/pomodoro-timer").then((m) => ({ default: m.PomodoroTimer })),
@@ -64,10 +65,14 @@ export default function Home() {
 
 	const closePanel = useCallback(() => setActivePanel(null), []);
 
+	const toggleDashboard = useCallback(() => {
+		setActivePanel((p) => p === "dashboard" ? null : "dashboard");
+	}, []);
+
 	useKeyboardShortcuts({
 		a: { fn: () => setShowSearch(true) },
 		t: { fn: toggleTimeFormat },
-		d: { fn: () => setActivePanel((p) => p === "dashboard" ? null : "dashboard") },
+		d: { fn: toggleDashboard },
 		p: { fn: () => setActivePanel((p) => p === "pomodoro" ? null : "pomodoro") },
 		s: { fn: () => setActivePanel((p) => p === "sounds" ? null : "sounds") },
 		"1": { fn: () => setViewMode("stack") },
@@ -116,12 +121,12 @@ export default function Home() {
 									transition={{ duration: 0.2 }}
 									className="flex-1 flex flex-col items-center justify-center p-8 text-(--color-muted-foreground) font-mono text-[10px] uppercase tracking-widest gap-3"
 								>
-									<span className="text-4xl">🌍</span>
+									<GlobeIcon size={32} className="text-(--color-muted)" />
 									<span>no time zones yet</span>
 									<button
 										type="button"
 										onClick={() => setShowSearch(true)}
-										className="font-mono text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-md border border-(--color-accent) text-(--color-accent) hover:bg-(--color-accent) hover:text-white transition-all duration-200 cursor-pointer"
+										className="font-mono text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-lg border border-(--color-accent) text-(--color-accent) hover:bg-(--color-accent) hover:text-white transition-all duration-200 cursor-pointer"
 									>
 										add a time zone
 									</button>
@@ -247,7 +252,7 @@ export default function Home() {
 					</a>
 				</div>
 			</footer>
-			<CommandPalette open={showCommandPalette} onClose={() => setShowCommandPalette(false)} />
+			<CommandPalette open={showCommandPalette} onClose={() => setShowCommandPalette(false)} onToggleDashboard={toggleDashboard} />
 		</div>
 	);
 }

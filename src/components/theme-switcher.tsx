@@ -3,17 +3,21 @@
 import { useClickSound } from "@/hooks/use-click-sound";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PixelButton, PixelBadge } from "./ui/pixel-button";
+import { MoonIcon, SparkleIcon, SparkleOffIcon, SunIcon, SystemIcon } from "./icons";
 
-const THEMES = [
-	{ value: "light", label: "Light", icon: "\u2600" },
-	{ value: "dark", label: "Dark", icon: "\u25CF" },
-	{ value: "system", label: "System", icon: "\u25D1" },
+type ThemeValue = "light" | "dark" | "system";
+
+const THEMES: { value: ThemeValue; label: string; icon: React.ReactNode }[] = [
+	{ value: "light", label: "Light", icon: <SunIcon size={12} /> },
+	{ value: "dark", label: "Dark", icon: <MoonIcon size={12} /> },
+	{ value: "system", label: "System", icon: <SystemIcon size={12} /> },
 ];
 
-function getIcon(theme: string | undefined) {
-	if (theme === "light") return "\u2600";
-	if (theme === "dark") return "\u25CF";
-	return "\u25D1";
+function IconForTheme(theme: string | undefined) {
+	if (theme === "light") return <SunIcon size={14} />;
+	if (theme === "dark") return <MoonIcon size={14} />;
+	return <SystemIcon size={14} />;
 }
 
 export function ThemeSwitcher({
@@ -40,8 +44,7 @@ export function ThemeSwitcher({
 	useEffect(() => {
 		if (open) {
 			document.addEventListener("mousedown", handleClickOutside);
-			return () =>
-				document.removeEventListener("mousedown", handleClickOutside);
+			return () => document.removeEventListener("mousedown", handleClickOutside);
 		}
 		return undefined;
 	}, [open, handleClickOutside]);
@@ -51,49 +54,46 @@ export function ThemeSwitcher({
 	return (
 		<>
 			<div
-				className="hidden sm:flex items-center gap-1"
+				className="hidden sm:flex items-center gap-0.5"
 				role="group"
 				aria-label="Theme"
 			>
-				{THEMES.map(({ value, label }) => (
-					<button
+				{THEMES.map(({ value, label, icon }) => (
+					<PixelButton
 						key={value}
-						type="button"
-						aria-pressed={theme === value}
+						variant="outline"
+						size="sm"
+						active={theme === value}
+						icon={icon}
 						onClick={() => {
 							setTheme(value);
 							playClick();
 						}}
-						className={`font-mono text-[10px] uppercase tracking-widest px-2.5 py-1.5 border rounded-md transition-all duration-200 cursor-pointer ${
-							theme === value
-								? "text-(--color-foreground) border-(--color-accent) bg-accent/10 shadow-sm"
-								: "text-(--color-muted-foreground) border-transparent hover:text-(--color-foreground) hover:bg-(--color-foreground)/[0.04]"
-						}`}
+						aria-pressed={theme === value}
 					>
 						{label}
-					</button>
+					</PixelButton>
 				))}
 			</div>
 
 			<div ref={ref} className="relative sm:hidden">
-				<button
-					type="button"
-					aria-label={`Theme: ${theme ?? "system"}`}
-					aria-expanded={open}
-					aria-haspopup="menu"
+				<PixelButton
+					variant="outline"
+					size="sm"
+					icon={IconForTheme(theme)}
 					onClick={() => {
 						setOpen(!open);
 						playClick();
 					}}
-					className="flex items-center justify-center w-9 h-9 border border-(--color-border) rounded-md text-(--color-foreground) transition-all duration-200 cursor-pointer hover:bg-accent/10 hover:border-(--color-accent)"
-					style={{ fontSize: "16px" }}
-				>
-					{getIcon(theme)}
-				</button>
+					aria-label={`Theme: ${theme ?? "system"}`}
+					aria-expanded={open}
+					aria-haspopup="menu"
+				/>
 				{open && (
 					<div
 						role="menu"
-						className="absolute right-0 top-full mt-1 z-50 flex flex-col border border-(--color-border) bg-(--color-background) rounded-lg shadow-xl min-w-[120px] overflow-hidden"
+						className="absolute right-0 top-full mt-1 z-50 flex flex-col border-2 border-(--color-border) bg-(--color-surface-elev) min-w-[140px] animate-slide-up"
+						style={{ boxShadow: "4px 4px 0 0 var(--pixel)" }}
 					>
 						{THEMES.map(({ value, label, icon }) => (
 							<button
@@ -106,19 +106,18 @@ export function ThemeSwitcher({
 									playClick();
 									setOpen(false);
 								}}
-								className={`flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest px-3 py-2.5 transition-all duration-150 cursor-pointer text-left ${
+								className={[
+									"flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest px-3 py-2 cursor-pointer text-left w-full",
+									"transition-colors duration-75 border-b-2 border-(--color-border-subtle) last:border-b-0",
 									theme === value
-										? "text-(--color-foreground) bg-accent/10"
-										: "text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-(--color-foreground)/[0.04]"
-								}`}
+										? "bg-(--color-foreground) text-(--color-background)"
+										: "text-(--color-muted-foreground) hover:bg-(--color-foreground)/5 hover:text-(--color-foreground)",
+								].join(" ")}
 							>
-								<span aria-hidden="true" style={{ fontSize: "14px" }}>
-									{icon}
-								</span>
+								{icon}
 								{label}
 							</button>
 						))}
-						<div className="border-t border-(--color-border)" />
 						<button
 							type="button"
 							role="menuitem"
@@ -128,16 +127,17 @@ export function ThemeSwitcher({
 								playClick();
 								setOpen(false);
 							}}
-							className={`flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest px-3 py-2.5 transition-all duration-150 cursor-pointer text-left ${
+							className={[
+								"flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest px-3 py-2 cursor-pointer text-left w-full",
+								"transition-colors duration-75",
 								ambientMode
-									? "text-(--color-foreground) bg-accent/10"
-									: "text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-(--color-foreground)/[0.04]"
-							}`}
+									? "bg-(--color-foreground) text-(--color-background)"
+									: "text-(--color-muted-foreground) hover:bg-(--color-foreground)/5 hover:text-(--color-foreground)",
+							].join(" ")}
 						>
-							<span aria-hidden="true" style={{ fontSize: "14px" }}>
-								{ambientMode ? "\u2728" : "\u25CB"}
-							</span>
+							{ambientMode ? <SparkleIcon size={12} /> : <SparkleOffIcon size={12} />}
 							Ambient
+							{ambientMode && <PixelBadge variant="success" className="ml-auto">on</PixelBadge>}
 						</button>
 					</div>
 				)}

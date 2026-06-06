@@ -36,8 +36,7 @@ function load(): ZonesState {
 		if (!raw) return DEFAULT_STATE;
 		const parsed = JSON.parse(raw) as Partial<ZonesState>;
 
-		// Check version and reset if outdated
-		if (!parsed.version || parsed.version < CURRENT_VERSION) {
+		if (!parsed.version || parsed.version > CURRENT_VERSION) {
 			return DEFAULT_STATE;
 		}
 

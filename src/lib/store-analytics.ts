@@ -53,6 +53,8 @@ function notify() {
 	for (const listener of listeners) listener();
 }
 
+let analyticsServerSnapshot: AnalyticsState | null = null;
+
 export const analyticsStore = {
 	getState(): AnalyticsState {
 		init();
@@ -60,7 +62,10 @@ export const analyticsStore = {
 	},
 
 	getServerState(): AnalyticsState {
-		return { ...DEFAULT_ANALYTICS_STATE };
+		if (!analyticsServerSnapshot) {
+			analyticsServerSnapshot = { ...DEFAULT_ANALYTICS_STATE };
+		}
+		return analyticsServerSnapshot;
 	},
 
 	subscribe(listener: Listener): () => void {

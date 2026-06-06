@@ -46,7 +46,6 @@ export function GroupedZoneRow({
 					: "border-(--color-border) hover:bg-foreground/[0.02] hover:border-(--color-muted)"
 			}`}
 		>
-			{/* Left: flags + city info */}
 			<div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
 				<div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
 					{group.zones.map((zone) => (
@@ -81,7 +80,6 @@ export function GroupedZoneRow({
 				</div>
 			</div>
 
-			{/* Right: delta + time */}
 			<div className="flex items-baseline gap-1.5 sm:gap-2 shrink-0">
 				<div className="flex flex-col items-end gap-0.5">
 					{deltaStr && (
