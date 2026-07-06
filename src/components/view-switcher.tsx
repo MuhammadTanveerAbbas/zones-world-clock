@@ -23,31 +23,26 @@ import { PixelBadge, PixelButton } from "./ui/pixel-button";
 const VIEWS: {
 	mode: ViewMode;
 	label: string;
-	shortLabel: string;
 	icon: ReactNode;
 }[] = [
 	{
 		mode: "stack",
 		label: "Stack",
-		shortLabel: "St",
 		icon: <StackIcon size={12} />,
 	},
 	{
 		mode: "scroll",
 		label: "List",
-		shortLabel: "Li",
 		icon: <ListIcon size={12} />,
 	},
 	{
 		mode: "grid",
 		label: "Grid",
-		shortLabel: "Gr",
 		icon: <GridIcon size={12} />,
 	},
 	{
 		mode: "compact",
 		label: "Mini",
-		shortLabel: "Mi",
 		icon: <CompactIcon size={12} />,
 	},
 ];
@@ -119,7 +114,7 @@ export function ViewSwitcher({
 					role="tablist"
 					aria-label="View modes"
 				>
-					{VIEWS.map(({ mode, label, shortLabel, icon }) => (
+					{VIEWS.map(({ mode, label, icon }) => (
 						<PixelButton
 							key={mode}
 							variant="outline"
@@ -130,10 +125,8 @@ export function ViewSwitcher({
 							role="tab"
 							aria-selected={current === mode}
 							aria-label={label}
-							className="sm:[&_span]:inline-block"
 						>
-							<span className="sm:hidden">{shortLabel}</span>
-							<span className="hidden sm:inline">{label}</span>
+							{label}
 						</PixelButton>
 					))}
 				</div>
