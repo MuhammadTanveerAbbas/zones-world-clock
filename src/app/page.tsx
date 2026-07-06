@@ -3,6 +3,7 @@
 import { CommandPalette } from "@/components/command-palette";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { GlobeIcon } from "@/components/icons";
+import { SiteFooter } from "@/components/site-footer";
 import { ViewSwitcher } from "@/components/view-switcher";
 import { CompactView } from "@/components/views/compact-view";
 import { GridView } from "@/components/views/grid-view";
@@ -273,48 +274,7 @@ export default function Home() {
 					existingIds={existingIds}
 				/>
 			)}
-			<footer className="border-t border-(--color-border) px-3 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between shrink-0 bg-(--color-background)">
-				<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
-					Made by{" "}
-					<a
-						href="https://themvpguy.vercel.app/"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="hover:text-(--color-accent) transition-colors"
-					>
-						Muhammad Tanveer Abbas
-					</a>
-				</span>
-				<div className="flex items-center gap-2 sm:gap-3">
-					<a
-						href="https://x.com/m_tanveerabbas"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="X (Twitter)"
-						className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-accent) transition-colors"
-					>
-						X
-					</a>
-					<a
-						href="https://linkedin.com/in/muhammadtanveerabbas"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="LinkedIn"
-						className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-accent) transition-colors"
-					>
-						LinkedIn
-					</a>
-					<a
-						href="https://github.com/muhammadtanveerabbas"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="GitHub"
-						className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-accent) transition-colors"
-					>
-						GitHub
-					</a>
-				</div>
-			</footer>
+			<SiteFooter />
 			<CommandPalette
 				open={showCommandPalette}
 				onClose={() => setShowCommandPalette(false)}

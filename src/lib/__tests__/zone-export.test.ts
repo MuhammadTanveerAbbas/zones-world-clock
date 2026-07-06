@@ -1,12 +1,12 @@
 import {
 	ZONES_EXPORT_VERSION,
+	type ZonesExportPayload,
 	buildShareUrl,
 	decodeZonesHash,
 	encodeZonesHash,
 	encodeZonesPayload,
 	parseZonesImport,
 	validateZonesExport,
-	type ZonesExportPayload,
 } from "@/lib/zone-export";
 import { DEFAULT_ZONES } from "@/lib/zones";
 import { describe, expect, it } from "vitest";
