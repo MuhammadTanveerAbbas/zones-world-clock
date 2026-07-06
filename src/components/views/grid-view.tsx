@@ -1,5 +1,6 @@
 "use client";
 
+import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import {
 	formatPeriod,
 	formatTime,
@@ -7,7 +8,6 @@ import {
 	getDeltaHours,
 	getZonedTime,
 } from "@/lib/time-utils";
-import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import type { Zone } from "@/lib/zones";
 import * as m from "motion/react-m";
 import { useMemo } from "react";
@@ -80,13 +80,13 @@ export function GridView({
 							}`}
 						>
 							{!isHome && (
-								<div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex items-center gap-0.5 sm:gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+								<div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex items-center gap-0.5 sm:gap-1 max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
 									<button
 										type="button"
 										onClick={() => onSetHome(zone.id)}
 										className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
 									>
-										set home
+										Set home
 									</button>
 									<button
 										type="button"
@@ -117,7 +117,7 @@ export function GridView({
 										</span>
 										{isHome && (
 											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
-												home
+												Home
 											</span>
 										)}
 									</div>

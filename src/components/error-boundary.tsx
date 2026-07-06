@@ -31,14 +31,17 @@ export class ErrorBoundary extends Component<Props, State> {
 			return (
 				this.props.fallback || (
 					<div className="flex flex-col items-center justify-center p-8 text-(--color-muted-foreground) font-mono text-[10px] uppercase tracking-widest">
-						<WarningIcon size={20} className="text-(--color-delta-negative) mb-1" />
-						something went wrong
+						<WarningIcon
+							size={20}
+							className="text-(--color-delta-negative) mb-1"
+						/>
+						Something went wrong
 						<button
 							type="button"
 							onClick={() => this.setState({ hasError: false })}
 							className="mt-3 font-mono text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-lg border border-(--color-border) hover:text-(--color-foreground) hover:border-(--color-muted) transition-all cursor-pointer"
 						>
-							try again
+							Try again
 						</button>
 					</div>
 				)

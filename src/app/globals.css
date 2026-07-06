@@ -147,26 +147,22 @@ input:focus-visible,
 }
 
 .pixel-shadow {
-	box-shadow:
-		2px 2px 0 0 var(--pixel),
-		4px 4px 0 0 var(--shadow);
+	box-shadow: 2px 2px 0 0 var(--pixel), 4px 4px 0 0 var(--shadow);
 }
 
 .pixel-inset {
-	box-shadow:
-		inset 2px 2px 0 0 var(--shadow),
-		inset -2px -2px 0 0 var(--pixel);
+	box-shadow: inset 2px 2px 0 0 var(--shadow), inset -2px -2px 0 0 var(--pixel);
 }
 
 .pixel-btn {
 	position: relative;
-	transition: transform 80ms steps(1, end), box-shadow 80ms steps(1, end), background 80ms steps(1, end);
+	transition: transform 80ms steps(1, end), box-shadow 80ms steps(1, end),
+		background 80ms steps(1, end);
 }
 
 .pixel-btn:active:not(:disabled) {
 	transform: translate(1px, 1px);
-	box-shadow:
-		inset 1px 1px 0 0 var(--shadow);
+	box-shadow: inset 1px 1px 0 0 var(--shadow);
 }
 
 .pixel-btn:hover:not(:disabled) {
@@ -174,8 +170,13 @@ input:focus-visible,
 }
 
 @keyframes pulse-dot {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0.3; }
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.3;
+	}
 }
 
 .animate-pulse-dot {
@@ -183,8 +184,14 @@ input:focus-visible,
 }
 
 @keyframes blink {
-	0%, 49% { opacity: 1; }
-	50%, 100% { opacity: 0; }
+	0%,
+	49% {
+		opacity: 1;
+	}
+	50%,
+	100% {
+		opacity: 0;
+	}
 }
 
 .animate-blink {
@@ -192,8 +199,14 @@ input:focus-visible,
 }
 
 @keyframes slide-up {
-	from { opacity: 0; transform: translateY(8px); }
-	to { opacity: 1; transform: translateY(0); }
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .animate-slide-up {
@@ -201,8 +214,12 @@ input:focus-visible,
 }
 
 @keyframes fade-in {
-	from { opacity: 0; }
-	to { opacity: 1; }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 .animate-fade-in {
@@ -210,8 +227,14 @@ input:focus-visible,
 }
 
 @keyframes pop-in {
-	0% { opacity: 0; transform: scale(0.92); }
-	100% { opacity: 1; transform: scale(1); }
+	0% {
+		opacity: 0;
+		transform: scale(0.92);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
 }
 
 .animate-pop-in {
@@ -219,18 +242,31 @@ input:focus-visible,
 }
 
 @keyframes pixel-marquee {
-	0% { background-position: 0 0; }
-	100% { background-position: 16px 0; }
+	0% {
+		background-position: 0 0;
+	}
+	100% {
+		background-position: 16px 0;
+	}
 }
 
 @keyframes shake {
-	0%, 100% { transform: translate(0, 0); }
-	25% { transform: translate(-1px, 0); }
-	75% { transform: translate(1px, 0); }
+	0%,
+	100% {
+		transform: translate(0, 0);
+	}
+	25% {
+		transform: translate(-1px, 0);
+	}
+	75% {
+		transform: translate(1px, 0);
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	*, *::before, *::after {
+	*,
+	*::before,
+	*::after {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
@@ -251,7 +287,8 @@ input:focus-visible,
 }
 
 @media (max-width: 639px) {
-	button, a {
-		min-height: 32px;
+	button,
+	a {
+		min-height: 44px;
 	}
 }

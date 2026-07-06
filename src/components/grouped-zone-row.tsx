@@ -96,7 +96,9 @@ export function GroupedZoneRow({
 						>
 							{deltaStr}
 							{group.dayDelta !== 0 && (
-								<span className="ml-1">{group.dayDelta > 0 ? "+1d" : "-1d"}</span>
+								<span className="ml-1">
+									{group.dayDelta > 0 ? "+1d" : "-1d"}
+								</span>
 							)}
 						</m.span>
 					)}

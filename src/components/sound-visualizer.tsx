@@ -34,15 +34,19 @@ export function SoundVisualizer({ active }: { active: boolean }) {
 		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
 
-		let w = (canvas.width = canvas.offsetWidth * devicePixelRatio);
-		let h = (canvas.height = canvas.offsetHeight * devicePixelRatio);
+		let w = canvas.offsetWidth * devicePixelRatio;
+		canvas.width = w;
+		let h = canvas.offsetHeight * devicePixelRatio;
+		canvas.height = h;
 		ctx.scale(devicePixelRatio, devicePixelRatio);
 		const cssW = canvas.offsetWidth;
 		const cssH = canvas.offsetHeight;
 
 		const resize = () => {
-			w = canvas.width = canvas.offsetWidth * devicePixelRatio;
-			h = canvas.height = canvas.offsetHeight * devicePixelRatio;
+			w = canvas.offsetWidth * devicePixelRatio;
+			canvas.width = w;
+			h = canvas.offsetHeight * devicePixelRatio;
+			canvas.height = h;
 		};
 		window.addEventListener("resize", resize);
 
@@ -100,7 +104,10 @@ export function SoundVisualizer({ active }: { active: boolean }) {
 				p.y += p.vy;
 
 				const progress = p.life / p.maxLife;
-				const alpha = Math.max(0, 0.7 * (1 - progress) * (0.5 + intensity * 0.5));
+				const alpha = Math.max(
+					0,
+					0.7 * (1 - progress) * (0.5 + intensity * 0.5),
+				);
 				const color = COLORS[p.hue % COLORS.length];
 				const glow = intensity * 8;
 
@@ -140,7 +147,6 @@ export function SoundVisualizer({ active }: { active: boolean }) {
 		<canvas
 			ref={canvasRef}
 			className="absolute inset-0 w-full h-full pointer-events-none z-0"
-			aria-hidden="true"
 		/>
 	);
 }

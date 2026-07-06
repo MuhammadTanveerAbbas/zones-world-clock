@@ -77,3 +77,33 @@ export function getDayDelta(homeZoned: Date, targetZoned: Date): -1 | 0 | 1 {
 	if (targetDay < homeDay) return -1;
 	return 0;
 }
+
+export type ZoneTimeInfo = {
+	delta: number;
+	deltaStr: string;
+	timeStr: string;
+	period: string;
+	dayDelta: -1 | 0 | 1;
+	dayLabel: string;
+};
+
+export function getZoneTimeInfo(
+	zone: { id: string; tz: string },
+	homeId: string,
+	homeTz: string,
+	displayTime: Date,
+	use24h: boolean,
+): ZoneTimeInfo {
+	const isHome = zone.id === homeId;
+	const delta = isHome ? 0 : getDeltaHours(homeTz, zone.tz, displayTime);
+	const homeZoned = getZonedTime(displayTime, homeTz);
+	const targetZoned = getZonedTime(displayTime, zone.tz);
+	const dayDelta = isHome ? 0 : getDayDelta(homeZoned, targetZoned);
+	const timeStr = formatTime(displayTime, zone.tz, use24h);
+	const period = use24h ? "" : formatPeriod(displayTime, zone.tz);
+	const deltaSign = delta > 0 ? "+" : "";
+	const deltaStr = delta !== 0 ? `${deltaSign}${delta}h` : "";
+	const dayLabel = dayDelta !== 0 ? (dayDelta > 0 ? "+1d" : "-1d") : "";
+
+	return { delta, deltaStr, timeStr, period, dayDelta, dayLabel };
+}

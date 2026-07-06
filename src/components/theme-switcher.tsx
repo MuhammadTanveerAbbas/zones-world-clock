@@ -3,8 +3,14 @@
 import { useClickSound } from "@/hooks/use-click-sound";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { PixelButton, PixelBadge } from "./ui/pixel-button";
-import { MoonIcon, SparkleIcon, SparkleOffIcon, SunIcon, SystemIcon } from "./icons";
+import {
+	MoonIcon,
+	SparkleIcon,
+	SparkleOffIcon,
+	SunIcon,
+	SystemIcon,
+} from "./icons";
+import { PixelBadge, PixelButton } from "./ui/pixel-button";
 
 type ThemeValue = "light" | "dark" | "system";
 
@@ -44,7 +50,8 @@ export function ThemeSwitcher({
 	useEffect(() => {
 		if (open) {
 			document.addEventListener("mousedown", handleClickOutside);
-			return () => document.removeEventListener("mousedown", handleClickOutside);
+			return () =>
+				document.removeEventListener("mousedown", handleClickOutside);
 		}
 		return undefined;
 	}, [open, handleClickOutside]);
@@ -53,11 +60,7 @@ export function ThemeSwitcher({
 
 	return (
 		<>
-			<div
-				className="hidden sm:flex items-center gap-0.5"
-				role="group"
-				aria-label="Theme"
-			>
+			<div className="hidden sm:flex items-center gap-0.5" aria-label="Theme">
 				{THEMES.map(({ value, label, icon }) => (
 					<PixelButton
 						key={value}
@@ -135,9 +138,17 @@ export function ThemeSwitcher({
 									: "text-(--color-muted-foreground) hover:bg-(--color-foreground)/5 hover:text-(--color-foreground)",
 							].join(" ")}
 						>
-							{ambientMode ? <SparkleIcon size={12} /> : <SparkleOffIcon size={12} />}
+							{ambientMode ? (
+								<SparkleIcon size={12} />
+							) : (
+								<SparkleOffIcon size={12} />
+							)}
 							Ambient
-							{ambientMode && <PixelBadge variant="success" className="ml-auto">on</PixelBadge>}
+							{ambientMode && (
+								<PixelBadge variant="success" className="ml-auto">
+									on
+								</PixelBadge>
+							)}
 						</button>
 					</div>
 				)}

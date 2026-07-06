@@ -17,7 +17,7 @@
 
 ---
 
-Zones is a clean, fast, and fully client-side world clock dashboard. It solves the daily friction of tracking time across multiple cities and timezones no accounts, no backend, no bloat. Built for remote teams, digital nomads, and anyone who works across time zones.
+Zones is a clean, fast, and fully client-side world clock dashboard. It solves the daily friction of tracking time across multiple cities and time zones — no accounts, no backend, no bloat. Built for remote teams, digital nomads, and anyone who works across time zones.
 
 ## ✨ Features
 
@@ -29,9 +29,11 @@ Zones is a clean, fast, and fully client-side world clock dashboard. It solves t
 - 🖱 **Drag to Reorder:** Reorder zones in Scroll view via drag-and-drop
 - 🕐 **12h / 24h Toggle:** Switch time formats globally
 - 🎨 **Dark / Light / System Theme:** Persisted across sessions
-- 📳 **Haptic Feedback:** Web Haptics API on supported devices
-- 💾 **Persistent State:** All preferences saved to localStorage
 - 📱 **Fully Responsive:** Works on mobile, tablet, and desktop
+- 📳 **Haptic Feedback:** Web Haptics API on supported devices
+- 💾 **Export & Import:** Download, share, or import your timezone set via JSON or link
+- 💾 **Persistent State:** All preferences saved to localStorage
+- 📲 **Installable PWA:** Add to your home screen for quick access
 
 ## 🛠 Tech Stack
 
@@ -92,7 +94,10 @@ zones-world-clock/
 │   │   │   ├── grid-view.tsx
 │   │   │   └── compact-view.tsx
 │   │   ├── grouped-zone-row.tsx
-│   │   ├── timezone-row.tsx
+│   │   ├── dashboard.tsx
+│   │   ├── pomodoro-timer.tsx
+│   │   ├── music-player.tsx
+│   │   ├── command-palette.tsx
 │   │   ├── time-scrubber.tsx
 │   │   ├── view-switcher.tsx
 │   │   ├── zone-search.tsx
@@ -146,9 +151,9 @@ This project is deployed on **Vercel**.
 - [x] Drag-to-reorder zones
 - [x] Dark / Light / System theme
 - [x] Haptic feedback support
-- [ ] Export / share timezone sets
-- [ ] Keyboard shortcuts
-- [ ] PWA / installable app
+- [x] Keyboard shortcuts
+- [x] PWA / installable app
+- [x] Export / share timezone sets
 
 ## 🤝 Contributing
 

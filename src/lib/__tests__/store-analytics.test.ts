@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { analyticsStore } from "../store-analytics";
 
 beforeEach(() => {
@@ -58,9 +58,21 @@ describe("analyticsStore", () => {
 			"zones-analytics",
 			JSON.stringify({
 				history: [
-					{ date: twoDaysStr, totalFocusMs: 25 * 60 * 1000, sessionsCompleted: 1 },
-					{ date: yesterdayStr, totalFocusMs: 25 * 60 * 1000, sessionsCompleted: 1 },
-					{ date: todayStr, totalFocusMs: 25 * 60 * 1000, sessionsCompleted: 1 },
+					{
+						date: twoDaysStr,
+						totalFocusMs: 25 * 60 * 1000,
+						sessionsCompleted: 1,
+					},
+					{
+						date: yesterdayStr,
+						totalFocusMs: 25 * 60 * 1000,
+						sessionsCompleted: 1,
+					},
+					{
+						date: todayStr,
+						totalFocusMs: 25 * 60 * 1000,
+						sessionsCompleted: 1,
+					},
 				],
 			}),
 		);
@@ -74,7 +86,7 @@ describe("analyticsStore", () => {
 		const raw = localStorage.getItem("zones-analytics");
 		expect(raw).not.toBeNull();
 
-		const parsed = JSON.parse(raw!);
+		const parsed = JSON.parse(raw ?? "");
 		expect(parsed.history.length).toBe(1);
 		expect(parsed.history[0].totalFocusMs).toBe(10 * 60 * 1000);
 	});

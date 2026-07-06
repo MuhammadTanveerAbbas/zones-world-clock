@@ -1,17 +1,32 @@
 "use client";
 
-import { Command } from "cmdk";
 import { useZonesStore } from "@/hooks/use-zones-store";
+import { Command } from "cmdk";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StackIcon, ListIcon, GridIcon, CompactIcon, ClockIcon, DashboardIcon, CmdIcon } from "./icons";
+import {
+	ClockIcon,
+	CmdIcon,
+	CompactIcon,
+	DashboardIcon,
+	DownloadIcon,
+	GridIcon,
+	ListIcon,
+	StackIcon,
+} from "./icons";
 
 interface Props {
 	open: boolean;
 	onClose: () => void;
 	onToggleDashboard?: () => void;
+	onOpenShare?: () => void;
 }
 
-export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
+export function CommandPalette({
+	open,
+	onClose,
+	onToggleDashboard,
+	onOpenShare,
+}: Props) {
 	const { viewMode, setViewMode, toggleTimeFormat } = useZonesStore();
 	const [query, setQuery] = useState("");
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -35,16 +50,31 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 	const handleSelect = useCallback(
 		(action: string) => {
 			switch (action) {
-				case "view-stack": setViewMode("stack"); break;
-				case "view-scroll": setViewMode("scroll"); break;
-				case "view-grid": setViewMode("grid"); break;
-				case "view-compact": setViewMode("compact"); break;
-				case "toggle-format": toggleTimeFormat(); break;
-				case "toggle-dashboard": onToggleDashboard?.(); break;
+				case "view-stack":
+					setViewMode("stack");
+					break;
+				case "view-scroll":
+					setViewMode("scroll");
+					break;
+				case "view-grid":
+					setViewMode("grid");
+					break;
+				case "view-compact":
+					setViewMode("compact");
+					break;
+				case "toggle-format":
+					toggleTimeFormat();
+					break;
+				case "toggle-dashboard":
+					onToggleDashboard?.();
+					break;
+				case "export-zones":
+					onOpenShare?.();
+					break;
 			}
 			onClose();
 		},
-		[setViewMode, toggleTimeFormat, onToggleDashboard, onClose],
+		[setViewMode, toggleTimeFormat, onToggleDashboard, onOpenShare, onClose],
 	);
 
 	const handleOverlayClick = useCallback(
@@ -57,14 +87,22 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 	if (!open) return null;
 
 	const currentViewLabel =
-		viewMode === "stack" ? "Stack" :
-		viewMode === "scroll" ? "Scroll" :
-		viewMode === "grid" ? "Grid" : "Compact";
+		viewMode === "stack"
+			? "Stack"
+			: viewMode === "scroll"
+				? "Scroll"
+				: viewMode === "grid"
+					? "Grid"
+					: "Compact";
 
 	return (
 		<div
 			ref={overlayRef}
 			onClick={handleOverlayClick}
+			onKeyDown={(e) => {
+				if (e.key === "Escape") onClose();
+			}}
+			role="presentation"
 			className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/50 backdrop-blur-sm"
 		>
 			<div className="w-full max-w-md mx-4">
@@ -81,7 +119,7 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 					/>
 					<Command.List className="max-h-64 overflow-y-auto p-2">
 						<Command.Empty className="py-6 text-center font-mono text-[10px] text-(--color-muted-foreground)">
-							no results found
+							No results found
 						</Command.Empty>
 
 						<Command.Group heading="Views">
@@ -94,7 +132,9 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 									<StackIcon size={14} />
 									<span>Stack View</span>
 								</div>
-								<span className="text-[9px] text-(--color-muted-foreground)">1</span>
+								<span className="text-[9px] text-(--color-muted-foreground)">
+									1
+								</span>
 							</Command.Item>
 							<Command.Item
 								value="scroll-view"
@@ -105,7 +145,9 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 									<ListIcon size={14} />
 									<span>Scroll View</span>
 								</div>
-								<span className="text-[9px] text-(--color-muted-foreground)">2</span>
+								<span className="text-[9px] text-(--color-muted-foreground)">
+									2
+								</span>
 							</Command.Item>
 							<Command.Item
 								value="grid-view"
@@ -116,7 +158,9 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 									<GridIcon size={14} />
 									<span>Grid View</span>
 								</div>
-								<span className="text-[9px] text-(--color-muted-foreground)">3</span>
+								<span className="text-[9px] text-(--color-muted-foreground)">
+									3
+								</span>
 							</Command.Item>
 							<Command.Item
 								value="compact-view"
@@ -127,7 +171,9 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 									<CompactIcon size={14} />
 									<span>Compact View</span>
 								</div>
-								<span className="text-[9px] text-(--color-muted-foreground)">4</span>
+								<span className="text-[9px] text-(--color-muted-foreground)">
+									4
+								</span>
 							</Command.Item>
 						</Command.Group>
 
@@ -141,7 +187,9 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 									<ClockIcon size={14} />
 									<span>Toggle Time Format</span>
 								</div>
-								<span className="text-[9px] text-(--color-muted-foreground)">T</span>
+								<span className="text-[9px] text-(--color-muted-foreground)">
+									T
+								</span>
 							</Command.Item>
 							<Command.Item
 								value="toggle-dashboard"
@@ -152,7 +200,22 @@ export function CommandPalette({ open, onClose, onToggleDashboard }: Props) {
 									<DashboardIcon size={14} />
 									<span>Toggle Dashboard</span>
 								</div>
-								<span className="text-[9px] text-(--color-muted-foreground)">D</span>
+								<span className="text-[9px] text-(--color-muted-foreground)">
+									D
+								</span>
+							</Command.Item>
+							<Command.Item
+								value="export-zones"
+								onSelect={() => handleSelect("export-zones")}
+								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+							>
+								<div className="flex items-center gap-2">
+									<DownloadIcon size={14} />
+									<span>Export / Import Zones</span>
+								</div>
+								<span className="text-[9px] text-(--color-muted-foreground)">
+									E
+								</span>
 							</Command.Item>
 						</Command.Group>
 

@@ -1,3 +1,12 @@
+import {
+	ZONES_EXPORT_VERSION,
+	type ZonesExportPayload,
+	buildShareUrl,
+	decodeZonesHash,
+	encodeZonesPayload,
+	parseZonesImport,
+	zonesExportToState,
+} from "./zone-export";
 import { DEFAULT_ZONES, type Zone } from "./zones";
 
 export type ViewMode = "stack" | "scroll" | "grid" | "compact";
@@ -100,5 +109,51 @@ export const store = {
 		const byId = new Map(current.zones.map((z) => [z.id, z]));
 		const reordered = ids.map((id) => byId.get(id)).filter(Boolean) as Zone[];
 		store.setState({ zones: reordered });
+	},
+
+	exportPayload(): ZonesExportPayload {
+		const current = store.getState();
+		return {
+			version: ZONES_EXPORT_VERSION,
+			exportedAt: new Date().toISOString(),
+			zones: current.zones,
+			homeId: current.homeId,
+			viewMode: current.viewMode,
+			use24h: current.use24h,
+			ambientMode: current.ambientMode,
+		};
+	},
+
+	exportJson(): string {
+		return encodeZonesPayload(store.exportPayload());
+	},
+
+	getShareUrl(): string {
+		return buildShareUrl(store.exportPayload());
+	},
+
+	importPayload(payload: ZonesExportPayload) {
+		store.setState({
+			...zonesExportToState(payload),
+			version: CURRENT_VERSION,
+		});
+	},
+
+	importJson(raw: string): { ok: true } | { ok: false; error: string } {
+		const result = parseZonesImport(raw);
+		if (!result.ok) return result;
+		store.importPayload(result.payload);
+		return { ok: true };
+	},
+
+	importFromHash(hash: string): boolean {
+		const payload = decodeZonesHash(hash);
+		if (!payload) return false;
+		store.importPayload(payload);
+		return true;
+	},
+
+	resetToDefaults() {
+		store.setState({ ...DEFAULT_STATE, version: CURRENT_VERSION });
 	},
 };

@@ -1,16 +1,12 @@
 "use client";
 
+import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import {
-	formatPeriod,
-	formatTime,
 	formatDate,
-	getDayDelta,
-	getDeltaHours,
-	getZonedTime,
 	getTimezoneAbbreviation,
+	getZoneTimeInfo,
 	isDST,
 } from "@/lib/time-utils";
-import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import type { Zone } from "@/lib/zones";
 import { Reorder } from "motion/react";
 import { useMemo } from "react";
@@ -55,19 +51,11 @@ export function ScrollView({
 			>
 				{sorted.map((zone) => {
 					const isHome = zone.id === homeId;
-					const delta = isHome
-						? 0
-						: getDeltaHours(homeTz, zone.tz, displayTime);
-					const homeZoned = getZonedTime(displayTime, homeTz);
-					const targetZoned = getZonedTime(displayTime, zone.tz);
-					const dayDelta = isHome ? 0 : getDayDelta(homeZoned, targetZoned);
-					const timeStr = formatTime(displayTime, zone.tz, use24h);
-					const period = use24h ? "" : formatPeriod(displayTime, zone.tz);
+					const { delta, deltaStr, timeStr, period, dayDelta } =
+						getZoneTimeInfo(zone, homeId, homeTz, displayTime, use24h);
 					const abbrev = getTimezoneAbbreviation(zone.tz, displayTime);
 					const dst = isDST(zone.tz, displayTime);
 					const dateStr = formatDate(displayTime, zone.tz);
-					const deltaSign = delta > 0 ? "+" : "";
-					const deltaStr = delta !== 0 ? `${deltaSign}${delta}h` : "";
 					const ambientGradient = ambientMode
 						? getAmbientInlineGradient(
 								getTimeOfDay(displayTime, zone.tz),
@@ -151,12 +139,12 @@ export function ScrollView({
 								{dst && (
 									<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-amber-500 flex items-center gap-0.5">
 										<DstIcon size={10} />
-										dst
+										DST
 									</span>
 								)}
 								{isHome && (
 									<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded">
-										home
+										Home
 									</span>
 								)}
 								{deltaStr && (
@@ -182,13 +170,13 @@ export function ScrollView({
 									</span>
 								)}
 								{!isHome && (
-									<div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+									<div className="flex items-center gap-1 ml-auto max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
 										<button
 											type="button"
 											onClick={() => onSetHome(zone.id)}
 											className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
 										>
-											set home
+											Set home
 										</button>
 										<button
 											type="button"

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { pomodoroStore } from "../store-pomodoro";
 
 beforeEach(() => {
@@ -100,7 +100,7 @@ describe("pomodoroStore", () => {
 		const raw = localStorage.getItem("zones-pomodoro");
 		expect(raw).not.toBeNull();
 
-		const parsed = JSON.parse(raw!);
+		const parsed = JSON.parse(raw ?? "");
 		expect(parsed.sessions.length).toBe(1);
 	});
 

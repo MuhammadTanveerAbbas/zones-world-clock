@@ -85,8 +85,20 @@ export function PlusIcon(props: IconProps) {
 export function CloseIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
-			<rect x="3.5" y="7.25" width="9" height="1.5" transform="rotate(45 8 8)" />
-			<rect x="3.5" y="7.25" width="9" height="1.5" transform="rotate(-45 8 8)" />
+			<rect
+				x="3.5"
+				y="7.25"
+				width="9"
+				height="1.5"
+				transform="rotate(45 8 8)"
+			/>
+			<rect
+				x="3.5"
+				y="7.25"
+				width="9"
+				height="1.5"
+				transform="rotate(-45 8 8)"
+			/>
 		</svg>
 	);
 }
@@ -100,23 +112,12 @@ export function SearchIcon(props: IconProps) {
 	);
 }
 
-export function HomeIcon(props: IconProps) {
+export function DownloadIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
-			<path d="M8 1 L1 7 L2.5 7 L2.5 14 L6 14 L6 10 L10 10 L10 14 L13.5 14 L13.5 7 L15 7 Z" />
-		</svg>
-	);
-}
-
-export function TrashIcon(props: IconProps) {
-	return (
-		<svg {...base(props)}>
-			<rect x="2" y="3" width="12" height="1" />
-			<rect x="3" y="4" width="10" height="1" />
-			<rect x="4" y="5" width="1" height="8" />
-			<rect x="7.5" y="5" width="1" height="8" />
-			<rect x="11" y="5" width="1" height="8" />
-			<rect x="3" y="13" width="10" height="1" />
+			<rect x="7" y="2" width="2" height="7" />
+			<path d="M5 7 L8 11 L11 7 Z" />
+			<rect x="2" y="13" width="12" height="1" />
 		</svg>
 	);
 }
@@ -152,7 +153,15 @@ export function StopwatchIcon(props: IconProps) {
 		<svg {...base(props)}>
 			<rect x="6" y="1" width="4" height="1" />
 			<rect x="7" y="0" width="2" height="1" />
-			<rect x="2" y="3" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1" />
+			<rect
+				x="2"
+				y="3"
+				width="12"
+				height="12"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1"
+			/>
 			<rect x="7.5" y="6" width="1" height="3" />
 			<rect x="8" y="8" width="2" height="1" />
 		</svg>
@@ -215,7 +224,13 @@ export function SunIcon(props: IconProps) {
 			<rect x="3" y="3" width="1" height="2" transform="rotate(-45 3.5 4)" />
 			<rect x="12" y="3" width="1" height="2" transform="rotate(45 12.5 4)" />
 			<rect x="3" y="11" width="1" height="2" transform="rotate(45 3.5 12)" />
-			<rect x="12" y="11" width="1" height="2" transform="rotate(-45 12.5 12)" />
+			<rect
+				x="12"
+				y="11"
+				width="1"
+				height="2"
+				transform="rotate(-45 12.5 12)"
+			/>
 		</svg>
 	);
 }
@@ -231,8 +246,24 @@ export function MoonIcon(props: IconProps) {
 export function SystemIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
-			<rect x="1.5" y="3" width="13" height="8" fill="none" stroke="currentColor" strokeWidth="1" />
-			<rect x="2" y="4" width="12" height="6" fill="none" stroke="currentColor" strokeWidth="0.5" />
+			<rect
+				x="1.5"
+				y="3"
+				width="13"
+				height="8"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1"
+			/>
+			<rect
+				x="2"
+				y="4"
+				width="12"
+				height="6"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="0.5"
+			/>
 			<rect x="6" y="12" width="4" height="1" />
 			<rect x="4" y="13" width="8" height="1" />
 		</svg>
@@ -250,7 +281,12 @@ export function SparkleIcon(props: IconProps) {
 export function SparkleOffIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
-			<path d="M8 2 L9 6 L13 8 L9 10 L8 14 L7 10 L3 8 L7 6 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+			<path
+				d="M8 2 L9 6 L13 8 L9 10 L8 14 L7 10 L3 8 L7 6 Z"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1"
+			/>
 		</svg>
 	);
 }
@@ -282,19 +318,6 @@ export function WarningIcon(props: IconProps) {
 	);
 }
 
-export function DragIcon(props: IconProps) {
-	return (
-		<svg {...base(props)}>
-			<rect x="5" y="3" width="1.5" height="1.5" />
-			<rect x="9.5" y="3" width="1.5" height="1.5" />
-			<rect x="5" y="7.25" width="1.5" height="1.5" />
-			<rect x="9.5" y="7.25" width="1.5" height="1.5" />
-			<rect x="5" y="11.5" width="1.5" height="1.5" />
-			<rect x="9.5" y="11.5" width="1.5" height="1.5" />
-		</svg>
-	);
-}
-
 export function VolumeIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
@@ -310,7 +333,13 @@ export function VolumeMuteIcon(props: IconProps) {
 		<svg {...base(props)}>
 			<path d="M2 5 L2 11 L5 11 L9 14 L9 2 L5 5 Z" />
 			<rect x="11" y="5" width="1" height="1" transform="rotate(45 11.5 5.5)" />
-			<rect x="14" y="5" width="1" height="1" transform="rotate(-45 14.5 5.5)" />
+			<rect
+				x="14"
+				y="5"
+				width="1"
+				height="1"
+				transform="rotate(-45 14.5 5.5)"
+			/>
 		</svg>
 	);
 }
@@ -318,44 +347,10 @@ export function VolumeMuteIcon(props: IconProps) {
 export function SettingsIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
-			<path d="M8 1 L9 3 L11 3 L11 5 L13 6 L12 8 L13 10 L11 11 L11 13 L9 13 L8 15 L7 13 L5 13 L5 11 L3 10 L4 8 L3 6 L5 5 L5 3 L7 3 Z" fillRule="evenodd" />
-		</svg>
-	);
-}
-
-export function ArrowUpIcon(props: IconProps) {
-	return (
-		<svg {...base(props)}>
-			<path d="M8 2 L13 9 L10 9 L10 14 L6 14 L6 9 L3 9 Z" />
-		</svg>
-	);
-}
-
-export function ArrowDownIcon(props: IconProps) {
-	return (
-		<svg {...base(props)}>
-			<path d="M8 14 L3 7 L6 7 L6 2 L10 2 L10 7 L13 7 Z" />
-		</svg>
-	);
-}
-
-export function DownloadIcon(props: IconProps) {
-	return (
-		<svg {...base(props)}>
-			<rect x="7" y="2" width="2" height="7" />
-			<path d="M5 7 L8 11 L11 7 Z" />
-			<rect x="2" y="13" width="12" height="1" />
-		</svg>
-	);
-}
-
-export function PowerIcon(props: IconProps) {
-	return (
-		<svg {...base(props)}>
-			<rect x="7" y="2" width="2" height="6" />
-			<rect x="6" y="8" width="4" height="1" />
-			<rect x="5" y="9" width="6" height="1" />
-			<rect x="4" y="10" width="8" height="1" />
+			<path
+				d="M8 1 L9 3 L11 3 L11 5 L13 6 L12 8 L13 10 L11 11 L11 13 L9 13 L8 15 L7 13 L5 13 L5 11 L3 10 L4 8 L3 6 L5 5 L5 3 L7 3 Z"
+				fillRule="evenodd"
+			/>
 		</svg>
 	);
 }
@@ -380,32 +375,10 @@ export function ShortBreakIcon(props: IconProps) {
 	);
 }
 
-export function LongBreakIcon(props: IconProps) {
-	return (
-		<svg {...base(props)} fill="none" stroke="currentColor" strokeWidth="1">
-			<rect x="1.5" y="2.5" width="13" height="11" />
-			<rect x="3" y="4" width="2" height="8" fill="currentColor" />
-			<rect x="11" y="4" width="2" height="8" fill="currentColor" />
-		</svg>
-	);
-}
-
 export function CustomIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
 			<path d="M2 2 L14 2 L14 8 L9 8 L9 14 L2 14 Z" />
-		</svg>
-	);
-}
-
-export function CommandIcon(props: IconProps) {
-	return (
-		<svg {...base(props)}>
-			<rect x="1" y="1" width="4" height="4" />
-			<rect x="11" y="1" width="4" height="4" />
-			<rect x="1" y="11" width="4" height="4" />
-			<rect x="11" y="11" width="4" height="4" />
-			<rect x="5" y="7" width="6" height="2" />
 		</svg>
 	);
 }
@@ -418,14 +391,6 @@ export function CheckIcon(props: IconProps) {
 			<rect x="7" y="8" width="2" height="2" transform="rotate(-45 8 9)" />
 			<rect x="9" y="6" width="2" height="2" transform="rotate(-45 10 7)" />
 			<rect x="11" y="4" width="2" height="2" transform="rotate(-45 12 5)" />
-		</svg>
-	);
-}
-
-export function CheckedIcon(props: IconProps) {
-	return (
-		<svg {...base(props)}>
-			<path d="M2 8 L7 13 L14 3 L12 2 L7 9 L4 6 Z" />
 		</svg>
 	);
 }
@@ -609,7 +574,15 @@ export function PixelFanIcon(props: IconProps) {
 			<rect x="2" y="2" width="3" height="3" />
 			<rect x="6" y="1" width="4" height="2" />
 			<rect x="11" y="2" width="3" height="3" />
-			<rect x="6" y="5" width="4" height="6" fill="none" stroke="currentColor" strokeWidth="1" />
+			<rect
+				x="6"
+				y="5"
+				width="4"
+				height="6"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1"
+			/>
 			<rect x="2" y="6" width="3" height="4" />
 			<rect x="11" y="6" width="3" height="4" />
 			<rect x="6" y="12" width="4" height="3" />
@@ -670,7 +643,10 @@ export function PixelTrainIcon(props: IconProps) {
 export function PixelSpaceshipIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
-			<path d="M8 1 C 10 2 11 5 11 7 L13 7 L13 9 L11 9 C 11 11 10 13 8 15 C 6 13 5 11 5 9 L3 9 L3 7 L5 7 C 5 5 6 2 8 1 Z" fillRule="evenodd" />
+			<path
+				d="M8 1 C 10 2 11 5 11 7 L13 7 L13 9 L11 9 C 11 11 10 13 8 15 C 6 13 5 11 5 9 L3 9 L3 7 L5 7 C 5 5 6 2 8 1 Z"
+				fillRule="evenodd"
+			/>
 		</svg>
 	);
 }
@@ -699,7 +675,15 @@ export function PixelRoofIcon(props: IconProps) {
 export function CmdIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>
-			<rect x="4" y="4" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="1.2" />
+			<rect
+				x="4"
+				y="4"
+				width="8"
+				height="8"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1.2"
+			/>
 			<rect x="6" y="6" width="1" height="1" />
 			<rect x="9" y="6" width="1" height="1" />
 			<rect x="6" y="9" width="1" height="1" />
@@ -714,7 +698,15 @@ export function DashboardIcon(props: IconProps) {
 			<rect x="2" y="2" width="5" height="5" />
 			<rect x="9" y="2" width="5" height="5" />
 			<rect x="2" y="9" width="5" height="5" />
-			<rect x="9" y="9" width="5" height="5" fill="none" stroke="currentColor" strokeWidth="1" />
+			<rect
+				x="9"
+				y="9"
+				width="5"
+				height="5"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1"
+			/>
 		</svg>
 	);
 }

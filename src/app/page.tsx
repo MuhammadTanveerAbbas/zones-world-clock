@@ -1,36 +1,59 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { CommandPalette } from "@/components/command-palette";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { GlobeIcon } from "@/components/icons";
 import { ViewSwitcher } from "@/components/view-switcher";
 import { CompactView } from "@/components/views/compact-view";
 import { GridView } from "@/components/views/grid-view";
 import { ScrollView } from "@/components/views/scroll-view";
 import { StackView } from "@/components/views/stack-view";
 import { ZoneSearch } from "@/components/zone-search";
-import { CommandPalette } from "@/components/command-palette";
-import { ErrorBoundary } from "@/components/error-boundary";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useWorldClock } from "@/hooks/use-world-clock";
 import { useZonesStore } from "@/hooks/use-zones-store";
-import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { groupZones } from "@/lib/group-zones";
-import { LazyMotion, domAnimation, AnimatePresence, motion } from "motion/react";
-import { useCallback, useMemo, useState } from "react";
-import { GlobeIcon } from "@/components/icons";
+import { store } from "@/lib/store";
+import {
+	AnimatePresence,
+	LazyMotion,
+	domAnimation,
+	motion,
+} from "motion/react";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const PomodoroTimer = dynamic(
-	() => import("@/components/pomodoro-timer").then((m) => ({ default: m.PomodoroTimer })),
+	() =>
+		import("@/components/pomodoro-timer").then((m) => ({
+			default: m.PomodoroTimer,
+		})),
 	{ ssr: false },
 );
 const MusicPlayer = dynamic(
-	() => import("@/components/music-player").then((m) => ({ default: m.MusicPlayer })),
+	() =>
+		import("@/components/music-player").then((m) => ({
+			default: m.MusicPlayer,
+		})),
 	{ ssr: false },
 );
 const Dashboard = dynamic(
-	() => import("@/components/dashboard").then((m) => ({ default: m.Dashboard })),
+	() =>
+		import("@/components/dashboard").then((m) => ({ default: m.Dashboard })),
 	{ ssr: false },
 );
 const TimeScrubber = dynamic(
-	() => import("@/components/time-scrubber").then((m) => ({ default: m.TimeScrubber })),
+	() =>
+		import("@/components/time-scrubber").then((m) => ({
+			default: m.TimeScrubber,
+		})),
+	{ ssr: false },
+);
+const ZoneSharePanel = dynamic(
+	() =>
+		import("@/components/zone-share-panel").then((m) => ({
+			default: m.ZoneSharePanel,
+		})),
 	{ ssr: false },
 );
 
@@ -59,28 +82,49 @@ export default function Home() {
 		toggleAmbientMode,
 	} = useZonesStore();
 
-	const [activePanel, setActivePanel] = useState<"pomodoro" | "sounds" | "scrubber" | "dashboard" | null>(null);
+	const [activePanel, setActivePanel] = useState<
+		"pomodoro" | "sounds" | "scrubber" | "dashboard" | null
+	>(null);
 	const [showSearch, setShowSearch] = useState(false);
 	const [showCommandPalette, setShowCommandPalette] = useState(false);
+	const [showSharePanel, setShowSharePanel] = useState(false);
+
+	useEffect(() => {
+		if (typeof window === "undefined" || !window.location.hash) return;
+		if (store.importFromHash(window.location.hash)) {
+			window.history.replaceState(null, "", window.location.pathname);
+		}
+	}, []);
 
 	const closePanel = useCallback(() => setActivePanel(null), []);
 
 	const toggleDashboard = useCallback(() => {
-		setActivePanel((p) => p === "dashboard" ? null : "dashboard");
+		setActivePanel((p) => (p === "dashboard" ? null : "dashboard"));
 	}, []);
 
 	useKeyboardShortcuts({
 		a: { fn: () => setShowSearch(true) },
 		t: { fn: toggleTimeFormat },
 		d: { fn: toggleDashboard },
-		p: { fn: () => setActivePanel((p) => p === "pomodoro" ? null : "pomodoro") },
-		s: { fn: () => setActivePanel((p) => p === "sounds" ? null : "sounds") },
+		p: {
+			fn: () => setActivePanel((p) => (p === "pomodoro" ? null : "pomodoro")),
+		},
+		s: { fn: () => setActivePanel((p) => (p === "sounds" ? null : "sounds")) },
 		"1": { fn: () => setViewMode("stack") },
 		"2": { fn: () => setViewMode("scroll") },
 		"3": { fn: () => setViewMode("grid") },
 		"4": { fn: () => setViewMode("compact") },
 		"mod+k": { fn: () => setShowCommandPalette((v) => !v) },
-		escape: { fn: () => { setShowSearch(false); setShowCommandPalette(false); setActivePanel(null); }, preventDefault: false },
+		e: { fn: () => setShowSharePanel((v) => !v) },
+		escape: {
+			fn: () => {
+				setShowSearch(false);
+				setShowCommandPalette(false);
+				setShowSharePanel(false);
+				setActivePanel(null);
+			},
+			preventDefault: false,
+		},
 	});
 
 	const groups = useMemo(
@@ -122,13 +166,13 @@ export default function Home() {
 									className="flex-1 flex flex-col items-center justify-center p-8 text-(--color-muted-foreground) font-mono text-[10px] uppercase tracking-widest gap-3"
 								>
 									<GlobeIcon size={32} className="text-(--color-muted)" />
-									<span>no time zones yet</span>
+									<span>No time zones yet</span>
 									<button
 										type="button"
 										onClick={() => setShowSearch(true)}
 										className="font-mono text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-lg border border-(--color-accent) text-(--color-accent) hover:bg-(--color-accent) hover:text-white transition-all duration-200 cursor-pointer"
 									>
-										add a time zone
+										Add a time zone
 									</button>
 								</motion.div>
 							) : (
@@ -215,6 +259,13 @@ export default function Home() {
 				/>
 			</ErrorBoundary>
 
+			<ErrorBoundary>
+				<ZoneSharePanel
+					open={showSharePanel}
+					onClose={() => setShowSharePanel(false)}
+				/>
+			</ErrorBoundary>
+
 			{showSearch && (
 				<ZoneSearch
 					onAdd={handleAddZone}
@@ -225,26 +276,38 @@ export default function Home() {
 			<footer className="border-t border-(--color-border) px-3 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between shrink-0 bg-(--color-background)">
 				<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
 					Made by{" "}
-					<a href="https://themvpguy.vercel.app/" target="_blank" rel="noopener noreferrer"
+					<a
+						href="https://themvpguy.vercel.app/"
+						target="_blank"
+						rel="noopener noreferrer"
 						className="hover:text-(--color-accent) transition-colors"
 					>
 						Muhammad Tanveer Abbas
 					</a>
 				</span>
 				<div className="flex items-center gap-2 sm:gap-3">
-					<a href="https://x.com/m_tanveerabbas" target="_blank" rel="noopener noreferrer"
+					<a
+						href="https://x.com/m_tanveerabbas"
+						target="_blank"
+						rel="noopener noreferrer"
 						aria-label="X (Twitter)"
 						className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-accent) transition-colors"
 					>
 						X
 					</a>
-					<a href="https://linkedin.com/in/muhammadtanveerabbas" target="_blank" rel="noopener noreferrer"
+					<a
+						href="https://linkedin.com/in/muhammadtanveerabbas"
+						target="_blank"
+						rel="noopener noreferrer"
 						aria-label="LinkedIn"
 						className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-accent) transition-colors"
 					>
 						LinkedIn
 					</a>
-					<a href="https://github.com/muhammadtanveerabbas" target="_blank" rel="noopener noreferrer"
+					<a
+						href="https://github.com/muhammadtanveerabbas"
+						target="_blank"
+						rel="noopener noreferrer"
 						aria-label="GitHub"
 						className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-accent) transition-colors"
 					>
@@ -252,7 +315,12 @@ export default function Home() {
 					</a>
 				</div>
 			</footer>
-			<CommandPalette open={showCommandPalette} onClose={() => setShowCommandPalette(false)} onToggleDashboard={toggleDashboard} />
+			<CommandPalette
+				open={showCommandPalette}
+				onClose={() => setShowCommandPalette(false)}
+				onToggleDashboard={toggleDashboard}
+				onOpenShare={() => setShowSharePanel(true)}
+			/>
 		</div>
 	);
 }

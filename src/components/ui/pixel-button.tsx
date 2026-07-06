@@ -15,10 +15,14 @@ type PixelButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-	primary: "bg-(--color-accent) text-(--color-accent-fg) border-(--color-accent) hover:brightness-110",
-	ghost: "bg-transparent text-(--color-muted-foreground) border-transparent hover:bg-(--color-foreground)/[0.05] hover:text-(--color-foreground)",
-	outline: "bg-(--color-surface) text-(--color-foreground) border-(--color-border) hover:bg-(--color-surface-elev)",
-	danger: "bg-(--color-surface) text-(--color-delta-negative) border-(--color-border) hover:bg-(--color-delta-negative)/10 hover:border-(--color-delta-negative)",
+	primary:
+		"bg-(--color-accent) text-(--color-accent-fg) border-(--color-accent) hover:brightness-110",
+	ghost:
+		"bg-transparent text-(--color-muted-foreground) border-transparent hover:bg-(--color-foreground)/[0.05] hover:text-(--color-foreground)",
+	outline:
+		"bg-(--color-surface) text-(--color-foreground) border-(--color-border) hover:bg-(--color-surface-elev)",
+	danger:
+		"bg-(--color-surface) text-(--color-delta-negative) border-(--color-border) hover:bg-(--color-delta-negative)/10 hover:border-(--color-delta-negative)",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -27,7 +31,8 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 	md: "text-[11px] px-2.5 py-1.5",
 };
 
-const ACTIVE_CLASSES = "bg-(--color-foreground) text-(--color-background) border-(--color-foreground)";
+const ACTIVE_CLASSES =
+	"bg-(--color-foreground) text-(--color-background) border-(--color-foreground)";
 
 export function PixelButton({
 	variant = "outline",
@@ -61,7 +66,9 @@ export function PixelButton({
 		>
 			{icon && <span className="inline-flex shrink-0">{icon}</span>}
 			{children && <span className="truncate">{children}</span>}
-			{trailingIcon && <span className="inline-flex shrink-0">{trailingIcon}</span>}
+			{trailingIcon && (
+				<span className="inline-flex shrink-0">{trailingIcon}</span>
+			)}
 		</button>
 	);
 }
@@ -72,12 +79,20 @@ type BadgeProps = {
 	className?: string;
 };
 
-export function PixelBadge({ children, variant = "default", className = "" }: BadgeProps) {
+export function PixelBadge({
+	children,
+	variant = "default",
+	className = "",
+}: BadgeProps) {
 	const colorClass = {
-		default: "text-(--color-foreground) border-(--color-border) bg-(--color-surface)",
-		success: "text-(--color-delta-positive) border-(--color-delta-positive) bg-(--color-delta-positive)/10",
-		danger: "text-(--color-delta-negative) border-(--color-delta-negative) bg-(--color-delta-negative)/10",
-		muted: "text-(--color-muted-foreground) border-(--color-border) bg-transparent",
+		default:
+			"text-(--color-foreground) border-(--color-border) bg-(--color-surface)",
+		success:
+			"text-(--color-delta-positive) border-(--color-delta-positive) bg-(--color-delta-positive)/10",
+		danger:
+			"text-(--color-delta-negative) border-(--color-delta-negative) bg-(--color-delta-negative)/10",
+		muted:
+			"text-(--color-muted-foreground) border-(--color-border) bg-transparent",
 	}[variant];
 
 	return (

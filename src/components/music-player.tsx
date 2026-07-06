@@ -1,34 +1,164 @@
 "use client";
 
-import { audioManager, type AmbientSound } from "@/lib/audio-manager";
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import { OverlayPanel } from "./ui/overlay-panel";
+import { type AmbientSound, audioManager } from "@/lib/audio-manager";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	CheckIcon,
+	CloseIcon,
+	PixelBirdIcon,
+	PixelBlizzardIcon,
+	PixelBowlIcon,
+	PixelCafeIcon,
+	PixelDesertIcon,
+	PixelFanIcon,
+	PixelFireIcon,
+	PixelForestIcon,
+	PixelNightIcon,
+	PixelOceanIcon,
+	PixelRainIcon,
+	PixelRoofIcon,
+	PixelSpaceshipIcon,
+	PixelStreamIcon,
+	PixelThunderIcon,
+	PixelTrainIcon,
+	PixelWaterfallIcon,
+	PixelWhiteNoiseIcon,
+	PixelWindIcon,
+	VolumeIcon,
+	VolumeMuteIcon,
+} from "./icons";
 import { SoundVisualizer } from "./sound-visualizer";
+import { OverlayPanel } from "./ui/overlay-panel";
 import { PixelButton } from "./ui/pixel-button";
-import { VolumeIcon, VolumeMuteIcon, CloseIcon, CheckIcon, PixelRainIcon, PixelWindIcon, PixelOceanIcon, PixelForestIcon, PixelCafeIcon, PixelWhiteNoiseIcon, PixelThunderIcon, PixelNightIcon, PixelFireIcon, PixelStreamIcon, PixelFanIcon, PixelBirdIcon, PixelWaterfallIcon, PixelBowlIcon, PixelBlizzardIcon, PixelTrainIcon, PixelSpaceshipIcon, PixelDesertIcon, PixelRoofIcon } from "./icons";
 
-type SoundCategory = "weather" | "water" | "nature" | "urban" | "ambient" | "fantasy";
+type SoundCategory =
+	| "weather"
+	| "water"
+	| "nature"
+	| "urban"
+	| "ambient"
+	| "fantasy";
 
-const SOUNDS: { value: AmbientSound; label: string; icon: React.ReactNode; category: SoundCategory }[] = [
-	{ value: "rain", label: "Rain", icon: <PixelRainIcon size={24} />, category: "weather" },
-	{ value: "rainOnRoof", label: "Rain on Roof", icon: <PixelRoofIcon size={24} />, category: "weather" },
-	{ value: "thunder", label: "Thunder", icon: <PixelThunderIcon size={24} />, category: "weather" },
-	{ value: "blizzard", label: "Blizzard", icon: <PixelBlizzardIcon size={24} />, category: "weather" },
-	{ value: "wind", label: "Wind", icon: <PixelWindIcon size={24} />, category: "weather" },
-	{ value: "desert", label: "Desert Wind", icon: <PixelDesertIcon size={24} />, category: "weather" },
-	{ value: "ocean", label: "Ocean", icon: <PixelOceanIcon size={24} />, category: "water" },
-	{ value: "stream", label: "Stream", icon: <PixelStreamIcon size={24} />, category: "water" },
-	{ value: "waterfall", label: "Waterfall", icon: <PixelWaterfallIcon size={24} />, category: "water" },
-	{ value: "forest", label: "Forest", icon: <PixelForestIcon size={24} />, category: "nature" },
-	{ value: "birds", label: "Birds", icon: <PixelBirdIcon size={24} />, category: "nature" },
-	{ value: "night", label: "Night", icon: <PixelNightIcon size={24} />, category: "nature" },
-	{ value: "fire", label: "Campfire", icon: <PixelFireIcon size={24} />, category: "nature" },
-	{ value: "cafe", label: "Café", icon: <PixelCafeIcon size={24} />, category: "urban" },
-	{ value: "fan", label: "Fan", icon: <PixelFanIcon size={24} />, category: "urban" },
-	{ value: "train", label: "Train", icon: <PixelTrainIcon size={24} />, category: "urban" },
-	{ value: "whiteNoise", label: "White Noise", icon: <PixelWhiteNoiseIcon size={24} />, category: "ambient" },
-	{ value: "bowl", label: "Meditation Bowl", icon: <PixelBowlIcon size={24} />, category: "ambient" },
-	{ value: "spaceship", label: "Spaceship", icon: <PixelSpaceshipIcon size={24} />, category: "fantasy" },
+const SOUNDS: {
+	value: AmbientSound;
+	label: string;
+	icon: React.ReactNode;
+	category: SoundCategory;
+}[] = [
+	{
+		value: "rain",
+		label: "Rain",
+		icon: <PixelRainIcon size={24} />,
+		category: "weather",
+	},
+	{
+		value: "rainOnRoof",
+		label: "Rain on Roof",
+		icon: <PixelRoofIcon size={24} />,
+		category: "weather",
+	},
+	{
+		value: "thunder",
+		label: "Thunder",
+		icon: <PixelThunderIcon size={24} />,
+		category: "weather",
+	},
+	{
+		value: "blizzard",
+		label: "Blizzard",
+		icon: <PixelBlizzardIcon size={24} />,
+		category: "weather",
+	},
+	{
+		value: "wind",
+		label: "Wind",
+		icon: <PixelWindIcon size={24} />,
+		category: "weather",
+	},
+	{
+		value: "desert",
+		label: "Desert Wind",
+		icon: <PixelDesertIcon size={24} />,
+		category: "weather",
+	},
+	{
+		value: "ocean",
+		label: "Ocean",
+		icon: <PixelOceanIcon size={24} />,
+		category: "water",
+	},
+	{
+		value: "stream",
+		label: "Stream",
+		icon: <PixelStreamIcon size={24} />,
+		category: "water",
+	},
+	{
+		value: "waterfall",
+		label: "Waterfall",
+		icon: <PixelWaterfallIcon size={24} />,
+		category: "water",
+	},
+	{
+		value: "forest",
+		label: "Forest",
+		icon: <PixelForestIcon size={24} />,
+		category: "nature",
+	},
+	{
+		value: "birds",
+		label: "Birds",
+		icon: <PixelBirdIcon size={24} />,
+		category: "nature",
+	},
+	{
+		value: "night",
+		label: "Night",
+		icon: <PixelNightIcon size={24} />,
+		category: "nature",
+	},
+	{
+		value: "fire",
+		label: "Campfire",
+		icon: <PixelFireIcon size={24} />,
+		category: "nature",
+	},
+	{
+		value: "cafe",
+		label: "Café",
+		icon: <PixelCafeIcon size={24} />,
+		category: "urban",
+	},
+	{
+		value: "fan",
+		label: "Fan",
+		icon: <PixelFanIcon size={24} />,
+		category: "urban",
+	},
+	{
+		value: "train",
+		label: "Train",
+		icon: <PixelTrainIcon size={24} />,
+		category: "urban",
+	},
+	{
+		value: "whiteNoise",
+		label: "White Noise",
+		icon: <PixelWhiteNoiseIcon size={24} />,
+		category: "ambient",
+	},
+	{
+		value: "bowl",
+		label: "Meditation Bowl",
+		icon: <PixelBowlIcon size={24} />,
+		category: "ambient",
+	},
+	{
+		value: "spaceship",
+		label: "Spaceship",
+		icon: <PixelSpaceshipIcon size={24} />,
+		category: "fantasy",
+	},
 ];
 
 const CATEGORIES: { key: SoundCategory; label: string }[] = [
@@ -40,11 +170,15 @@ const CATEGORIES: { key: SoundCategory; label: string }[] = [
 	{ key: "fantasy", label: "Fantasy" },
 ];
 
-export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function MusicPlayer({
+	open,
+	onClose,
+}: { open: boolean; onClose: () => void }) {
 	const [activeSound, setActiveSound] = useState<AmbientSound>("none");
 	const [volume, setVolume] = useState(() => audioManager.getVolume());
 	const [amplitude, setAmplitude] = useState(0);
-	const [activeCategory, setActiveCategory] = useState<SoundCategory>("weather");
+	const [activeCategory, setActiveCategory] =
+		useState<SoundCategory>("weather");
 	const rafRef = useRef<number | null>(null);
 
 	useEffect(() => {
@@ -57,7 +191,9 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 			rafRef.current = requestAnimationFrame(poll);
 		};
 		poll();
-		return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+		return () => {
+			if (rafRef.current) cancelAnimationFrame(rafRef.current);
+		};
 	}, [open]);
 
 	const handlePlay = useCallback(
@@ -90,7 +226,12 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 	);
 
 	return (
-		<OverlayPanel open={open} onClose={onClose} title="Ambient Sounds" width="lg">
+		<OverlayPanel
+			open={open}
+			onClose={onClose}
+			title="Ambient Sounds"
+			width="lg"
+		>
 			<div className="relative overflow-hidden">
 				<SoundVisualizer active={activeSound !== "none"} />
 				<div className="relative z-10 p-4 sm:p-5 space-y-4">
@@ -148,7 +289,10 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 								{activeSound === s.value && (
 									<div className="flex items-center gap-[1.5px] h-2.5 mt-0.5">
 										{Array.from({ length: 6 }).map((_, i) => {
-											const a = Math.max(0.15, Math.min(1, amplitude * (2 + i * 0.8)));
+											const a = Math.max(
+												0.15,
+												Math.min(1, amplitude * (2 + i * 0.8)),
+											);
 											return (
 												<div
 													key={i}
@@ -189,7 +333,10 @@ export function MusicPlayer({ open, onClose }: { open: boolean; onClose: () => v
 								variant="danger"
 								size="xs"
 								icon={<CloseIcon size={10} />}
-								onClick={() => { audioManager.stop(); setActiveSound("none"); }}
+								onClick={() => {
+									audioManager.stop();
+									setActiveSound("none");
+								}}
 							>
 								stop
 							</PixelButton>

@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { type ReactNode, useCallback, useEffect, useRef } from "react";
 import { CloseIcon } from "../icons";
 
 interface Props {
@@ -19,7 +19,14 @@ const WIDTH_CLASSES = {
 	lg: "sm:max-w-2xl",
 };
 
-export function OverlayPanel({ open, onClose, title, children, width = "md", footer }: Props) {
+export function OverlayPanel({
+	open,
+	onClose,
+	title,
+	children,
+	width = "md",
+	footer,
+}: Props) {
 	const panelRef = useRef<HTMLDivElement>(null);
 	const prevFocusRef = useRef<HTMLElement | null>(null);
 
@@ -32,9 +39,12 @@ export function OverlayPanel({ open, onClose, title, children, width = "md", foo
 		prevFocusRef.current?.focus();
 	}, [open]);
 
-	const handleKey = useCallback((e: React.KeyboardEvent) => {
-		if (e.key === "Escape") onClose();
-	}, [onClose]);
+	const handleKey = useCallback(
+		(e: React.KeyboardEvent) => {
+			if (e.key === "Escape") onClose();
+		},
+		[onClose],
+	);
 
 	return (
 		<AnimatePresence>
@@ -46,18 +56,26 @@ export function OverlayPanel({ open, onClose, title, children, width = "md", foo
 					exit={{ opacity: 0 }}
 					transition={{ duration: 0.12 }}
 					className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/55 backdrop-blur-sm"
-					onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+					onClick={(e) => {
+						if (e.target === e.currentTarget) onClose();
+					}}
 				>
 					<motion.div
 						ref={panelRef}
 						tabIndex={-1}
+						// biome-ignore lint/a11y/useSemanticElements: motion.div required for spring animation
 						role="dialog"
 						aria-modal="true"
 						aria-label={title}
 						initial={{ y: "100%", opacity: 0 }}
 						animate={{ y: 0, opacity: 1 }}
 						exit={{ y: "100%", opacity: 0 }}
-						transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.85 }}
+						transition={{
+							type: "spring",
+							stiffness: 500,
+							damping: 38,
+							mass: 0.85,
+						}}
 						className={[
 							"relative w-full",
 							"bg-(--color-surface-elev) text-(--color-foreground)",

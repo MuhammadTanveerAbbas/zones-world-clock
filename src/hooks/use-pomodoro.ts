@@ -1,9 +1,13 @@
 "use client";
 
-import { useSyncExternalStore, useCallback } from "react";
-import { pomodoroStore, type PomodoroMode, type PomodoroSettings } from "@/lib/store-pomodoro";
-import { analyticsStore } from "@/lib/store-analytics";
 import { playSessionEndChime } from "@/lib/audio-manager";
+import { analyticsStore } from "@/lib/store-analytics";
+import {
+	type PomodoroMode,
+	type PomodoroSettings,
+	pomodoroStore,
+} from "@/lib/store-pomodoro";
+import { useCallback, useSyncExternalStore } from "react";
 
 export function usePomodoro() {
 	const state = useSyncExternalStore(
@@ -16,7 +20,10 @@ export function usePomodoro() {
 	const pause = useCallback(() => pomodoroStore.pause(), []);
 	const resume = useCallback(() => pomodoroStore.resume(), []);
 	const reset = useCallback(() => pomodoroStore.reset(), []);
-	const setMode = useCallback((mode: PomodoroMode) => pomodoroStore.setMode(mode), []);
+	const setMode = useCallback(
+		(mode: PomodoroMode) => pomodoroStore.setMode(mode),
+		[],
+	);
 	const updateSettings = useCallback(
 		(s: Partial<PomodoroSettings>) => pomodoroStore.updateSettings(s),
 		[],

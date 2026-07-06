@@ -35,7 +35,9 @@ function save(s: AnalyticsState) {
 	if (typeof window === "undefined") return;
 	try {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-	} catch {}
+	} catch {
+		// Storage may be unavailable in private browsing or when quota is exceeded
+	}
 }
 
 function init() {
@@ -80,10 +82,17 @@ export const analyticsStore = {
 		const newHistory = existing
 			? state.history.map((d) =>
 					d.date === today
-						? { ...d, totalFocusMs: d.totalFocusMs + durationMs, sessionsCompleted: d.sessionsCompleted + 1 }
+						? {
+								...d,
+								totalFocusMs: d.totalFocusMs + durationMs,
+								sessionsCompleted: d.sessionsCompleted + 1,
+							}
 						: d,
 				)
-			: [...state.history, { date: today, totalFocusMs: durationMs, sessionsCompleted: 1 }];
+			: [
+					...state.history,
+					{ date: today, totalFocusMs: durationMs, sessionsCompleted: 1 },
+				];
 
 		const cutoff = new Date();
 		cutoff.setDate(cutoff.getDate() - 90);
@@ -148,7 +157,9 @@ export const analyticsStore = {
 			const d = new Date(today);
 			d.setDate(d.getDate() - i);
 			const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-			if (state.history.some((h) => h.date === dateStr && h.sessionsCompleted > 0)) {
+			if (
+				state.history.some((h) => h.date === dateStr && h.sessionsCompleted > 0)
+			) {
 				streak++;
 			} else if (i > 0) {
 				break;

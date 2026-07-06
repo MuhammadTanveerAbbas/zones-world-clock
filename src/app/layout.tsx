@@ -38,8 +38,16 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
-				<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
-				<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+				<meta
+					name="theme-color"
+					content="#0a0a0a"
+					media="(prefers-color-scheme: dark)"
+				/>
+				<meta
+					name="theme-color"
+					content="#fafafa"
+					media="(prefers-color-scheme: light)"
+				/>
 				<link rel="manifest" href="/manifest.json" />
 			</head>
 			<body

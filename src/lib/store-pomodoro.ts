@@ -78,7 +78,11 @@ function load(): PomodoroState {
 		if (!parsed.version || parsed.version < CURRENT_VERSION) {
 			return { ...DEFAULT_POMODORO_STATE };
 		}
-		return { ...DEFAULT_POMODORO_STATE, ...parsed, settings: { ...DEFAULT_SETTINGS, ...parsed.settings } };
+		return {
+			...DEFAULT_POMODORO_STATE,
+			...parsed,
+			settings: { ...DEFAULT_SETTINGS, ...parsed.settings },
+		};
 	} catch {
 		return { ...DEFAULT_POMODORO_STATE };
 	}
@@ -116,13 +120,21 @@ function notify() {
 }
 
 export function requestNotificationPermission() {
-	if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+	if (
+		typeof window !== "undefined" &&
+		"Notification" in window &&
+		Notification.permission === "default"
+	) {
 		Notification.requestPermission();
 	}
 }
 
 export function sendCompletionNotification(mode: PomodoroMode) {
-	if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+	if (
+		typeof window !== "undefined" &&
+		"Notification" in window &&
+		Notification.permission === "granted"
+	) {
 		const titles: Record<PomodoroMode, string> = {
 			focus: "Focus session complete!",
 			shortBreak: "Short break over!",
@@ -167,7 +179,8 @@ export const pomodoroStore = {
 		init();
 		const durationMs = getCurrentDuration(state) * 1000;
 		if (state.phase === "idle") return durationMs;
-		if (state.phase === "paused" && state.pausedRemaining !== null) return state.pausedRemaining;
+		if (state.phase === "paused" && state.pausedRemaining !== null)
+			return state.pausedRemaining;
 		if (state.phase === "running" && state.endTime !== null) {
 			return Math.max(0, state.endTime - Date.now());
 		}
@@ -189,22 +202,29 @@ export const pomodoroStore = {
 	},
 
 	setMode(mode: PomodoroMode) {
-		this.setState({ mode, phase: "idle", endTime: null, pausedRemaining: null });
+		this.setState({
+			mode,
+			phase: "idle",
+			endTime: null,
+			pausedRemaining: null,
+		});
 	},
 
 	start() {
 		init();
 		if (state.phase === "running") return;
 		requestNotificationPermission();
-		const duration = state.phase === "paused" && state.pausedRemaining !== null
-			? state.pausedRemaining
-			: getCurrentDuration(state) * 1000;
+		const duration =
+			state.phase === "paused" && state.pausedRemaining !== null
+				? state.pausedRemaining
+				: getCurrentDuration(state) * 1000;
 		const now = Date.now();
 		this.setState({
 			phase: "running",
 			endTime: now + duration,
 			pausedRemaining: null,
-			currentSessionStart: state.phase === "idle" ? now : state.currentSessionStart,
+			currentSessionStart:
+				state.phase === "idle" ? now : state.currentSessionStart,
 		});
 	},
 
@@ -212,7 +232,11 @@ export const pomodoroStore = {
 		init();
 		if (state.phase !== "running" || state.endTime === null) return;
 		const remaining = Math.max(0, state.endTime - Date.now());
-		this.setState({ phase: "paused", pausedRemaining: remaining, endTime: null });
+		this.setState({
+			phase: "paused",
+			pausedRemaining: remaining,
+			endTime: null,
+		});
 	},
 
 	resume() {
@@ -220,7 +244,12 @@ export const pomodoroStore = {
 	},
 
 	reset() {
-		this.setState({ phase: "idle", endTime: null, pausedRemaining: null, currentSessionStart: null });
+		this.setState({
+			phase: "idle",
+			endTime: null,
+			pausedRemaining: null,
+			currentSessionStart: null,
+		});
 	},
 
 	skip() {
@@ -235,9 +264,15 @@ export const pomodoroStore = {
 			mode: state.mode,
 			startedAt: state.currentSessionStart || now,
 			completedAt: now,
-			duration: state.mode === "focus" ? state.settings.focusDuration : getCurrentDuration(state),
+			duration:
+				state.mode === "focus"
+					? state.settings.focusDuration
+					: getCurrentDuration(state),
 		};
-		const newCompleted = state.mode === "focus" ? state.completedSessions + 1 : state.completedSessions;
+		const newCompleted =
+			state.mode === "focus"
+				? state.completedSessions + 1
+				: state.completedSessions;
 		const allSessions = [...state.sessions, session];
 
 		if (state.settings.notificationsEnabled) {
@@ -256,13 +291,21 @@ export const pomodoroStore = {
 		if (state.settings.autoStartBreaks || state.settings.autoStartFocus) {
 			const nextMode = this.getNextMode(state.mode, newCompleted);
 			this.setState({ mode: nextMode });
-			const shouldAuto = nextMode === "focus" ? state.settings.autoStartFocus : state.settings.autoStartBreaks;
+			const shouldAuto =
+				nextMode === "focus"
+					? state.settings.autoStartFocus
+					: state.settings.autoStartBreaks;
 			if (shouldAuto) {
 				setTimeout(() => {
 					init();
 					const duration = getCurrentDuration(state) * 1000;
 					const n = Date.now();
-					state = { ...state, phase: "running", endTime: n + duration, currentSessionStart: n };
+					state = {
+						...state,
+						phase: "running",
+						endTime: n + duration,
+						currentSessionStart: n,
+					};
 					save(state);
 					notify();
 				}, 500);
@@ -272,7 +315,9 @@ export const pomodoroStore = {
 
 	getNextMode(currentMode: PomodoroMode, completedCount: number): PomodoroMode {
 		if (currentMode === "focus") {
-			return completedCount % state.settings.longBreakInterval === 0 ? "longBreak" : "shortBreak";
+			return completedCount % state.settings.longBreakInterval === 0
+				? "longBreak"
+				: "shortBreak";
 		}
 		return "focus";
 	},

@@ -14,7 +14,11 @@ export function useKeyboardShortcuts(shortcuts: ShortcutMap) {
 	useEffect(() => {
 		function handleKeyDown(e: KeyboardEvent) {
 			const target = e.target as HTMLElement;
-			if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+			if (
+				target.tagName === "INPUT" ||
+				target.tagName === "TEXTAREA" ||
+				target.isContentEditable
+			) {
 				return;
 			}
 

@@ -3,8 +3,8 @@ import {
 	formatTime,
 	getDayDelta,
 	getDeltaHours,
-	getZonedTime,
 	getTimezoneAbbreviation,
+	getZonedTime,
 	isDST,
 } from "./time-utils";
 import type { Zone } from "./zones";
@@ -33,7 +33,8 @@ export function groupZones(
 		const delta =
 			zone.id === homeId ? 0 : getDeltaHours(homeTz, zone.tz, displayTime);
 		if (!groups.has(delta)) groups.set(delta, []);
-		groups.get(delta)!.push(zone);
+		const bucket = groups.get(delta);
+		if (bucket) bucket.push(zone);
 	}
 
 	const homeZoned = getZonedTime(displayTime, homeTz);

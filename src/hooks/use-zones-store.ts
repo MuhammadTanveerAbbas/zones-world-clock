@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
-import { store, type ViewMode } from "@/lib/store";
+import { type ViewMode, store } from "@/lib/store";
 import type { Zone } from "@/lib/zones";
+import { useCallback, useSyncExternalStore } from "react";
 
 export function useZonesStore() {
 	const state = useSyncExternalStore(
@@ -37,6 +37,12 @@ export function useZonesStore() {
 		() => store.setState({ ambientMode: !store.getState().ambientMode }),
 		[],
 	);
+	const exportZonesJson = useCallback(() => store.exportJson(), []);
+	const getZonesShareUrl = useCallback(() => store.getShareUrl(), []);
+	const importZonesJson = useCallback(
+		(raw: string) => store.importJson(raw),
+		[],
+	);
 
 	const homeZone = state.zones.find((z) => z.id === state.homeId);
 	const homeTz = homeZone?.tz ?? "Asia/Karachi";
@@ -52,5 +58,8 @@ export function useZonesStore() {
 		removeZone,
 		reorderZones,
 		toggleAmbientMode,
+		exportZonesJson,
+		getZonesShareUrl,
+		importZonesJson,
 	};
 }
