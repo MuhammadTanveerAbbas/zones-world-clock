@@ -3,6 +3,8 @@
 import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import {
 	formatDate,
+	formatSeconds,
+	getDSTTransitionInfo,
 	getTimezoneAbbreviation,
 	getZoneTimeInfo,
 	isDST,
@@ -51,10 +53,11 @@ export function ScrollView({
 			>
 				{sorted.map((zone) => {
 					const isHome = zone.id === homeId;
-					const { delta, deltaStr, timeStr, period, dayDelta } =
+					const { delta, deltaStr, timeStr, secondsStr, period, dayDelta } =
 						getZoneTimeInfo(zone, homeId, homeTz, displayTime, use24h);
 					const abbrev = getTimezoneAbbreviation(zone.tz, displayTime);
 					const dst = isDST(zone.tz, displayTime);
+					const dstTransition = getDSTTransitionInfo(zone.tz, displayTime);
 					const dateStr = formatDate(displayTime, zone.tz);
 					const ambientGradient = ambientMode
 						? getAmbientInlineGradient(
@@ -92,11 +95,12 @@ export function ScrollView({
 									<div className="min-w-0 flex-1">
 										<div className="flex items-center justify-between gap-2">
 											<div className="font-mono text-base sm:text-2xl md:text-3xl font-bold text-(--color-foreground) tracking-wider uppercase leading-none truncate">
+												{isHome && <span className="home-prompt" />}
 												{zone.label}
 											</div>
 											<div className="flex items-baseline gap-0.5 sm:gap-1 shrink-0">
 												<div
-													className="font-mono font-bold tabular-nums tracking-wider"
+													className={`font-mono font-bold tabular-nums tracking-wider ${isHome ? "phosphor-time" : ""}`}
 													style={{
 														fontSize: "clamp(20px, 5vw, 72px)",
 														lineHeight: 1,
@@ -104,6 +108,17 @@ export function ScrollView({
 												>
 													{timeStr}
 												</div>
+												{secondsStr && (
+													<span
+														className="font-mono font-bold tabular-nums tracking-wider text-(--color-muted-foreground)"
+														style={{
+															fontSize: "clamp(10px, 2vw, 24px)",
+															lineHeight: 1,
+														}}
+													>
+														:{secondsStr}
+													</span>
+												)}
 												<div className="flex flex-col items-end">
 													{period && (
 														<span

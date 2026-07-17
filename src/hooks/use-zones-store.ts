@@ -37,6 +37,32 @@ export function useZonesStore() {
 		() => store.setState({ ambientMode: !store.getState().ambientMode }),
 		[],
 	);
+	const toggleScanlines = useCallback(
+		() =>
+			store.setState({
+				scanlinesEnabled: !store.getState().scanlinesEnabled,
+			}),
+		[],
+	);
+	const toggleSoundReactiveGlow = useCallback(
+		() =>
+			store.setState({
+				soundReactiveGlow: !store.getState().soundReactiveGlow,
+			}),
+		[],
+	);
+	const toggleEarthBackdrop = useCallback(
+		() =>
+			store.setState({
+				earthBackdrop: !store.getState().earthBackdrop,
+			}),
+		[],
+	);
+	const setWorkingHours = useCallback(
+		(hours: { start: number; end: number }) =>
+			store.setState({ workingHours: hours }),
+		[],
+	);
 	const exportZonesJson = useCallback(() => store.exportJson(), []);
 	const getZonesShareUrl = useCallback(() => store.getShareUrl(), []);
 	const importZonesJson = useCallback(
@@ -58,6 +84,10 @@ export function useZonesStore() {
 		removeZone,
 		reorderZones,
 		toggleAmbientMode,
+		toggleScanlines,
+		toggleSoundReactiveGlow,
+		toggleEarthBackdrop,
+		setWorkingHours,
 		exportZonesJson,
 		getZonesShareUrl,
 		importZonesJson,

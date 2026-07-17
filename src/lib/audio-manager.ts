@@ -1,3 +1,5 @@
+import { RECORDED_SOUNDS, isRecordedSound } from "./recorded-sounds";
+
 export type AmbientSound =
 	| "none"
 	| "rain"
@@ -18,7 +20,9 @@ export type AmbientSound =
 	| "train"
 	| "spaceship"
 	| "desert"
-	| "rainOnRoof";
+	| "rainOnRoof"
+	| "signatureRain"
+	| "signatureDrone";
 
 type SoundState = {
 	stop: () => void;
@@ -285,6 +289,12 @@ class AudioManager {
 		const master = this.masterGain;
 		if (!master) return;
 
+		if (isRecordedSound(sound)) {
+			this.playRecorded(sound, ctx, master);
+			this.startAmplitudeAnalysis();
+			return;
+		}
+
 		switch (sound) {
 			case "rain":
 				this.startRain(ctx, master);
@@ -347,6 +357,42 @@ class AudioManager {
 		this.startAmplitudeAnalysis();
 	}
 
+	private playRecorded(
+		sound: "signatureRain" | "signatureDrone",
+		ctx: AudioContext,
+		master: GainNode,
+	) {
+		const meta = RECORDED_SOUNDS[sound];
+		const gain = ctx.createGain();
+		gain.gain.value = this._masterVolume * 0.5;
+		gain.connect(master);
+
+		const audio = new Audio(meta.file);
+		audio.loop = true;
+		audio.crossOrigin = "anonymous";
+
+		const source = ctx.createMediaElementSource(audio);
+		source.connect(gain);
+
+		audio.play().catch(() => {});
+
+		this.state.set(sound, {
+			stop: () => {
+				audio.pause();
+				audio.currentTime = 0;
+				try {
+					source.disconnect();
+				} catch {}
+			},
+			cleanup: () => {
+				audio.src = "";
+			},
+			setVolume: (v) => {
+				gain.gain.setTargetAtTime(v * 0.5, ctx.currentTime, 0.05);
+			},
+		});
+	}
+
 	private registerVolume(
 		base: number,
 		gain: GainNode,
@@ -373,197 +419,336 @@ class AudioManager {
 
 	// ── Rain ──────────────────────────────────────────────
 	private startRain(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 6, "pink");
-		const src = ctx.createBufferSource();
-		src.buffer = noise;
-		src.loop = true;
+		// Layer 1: Dense base rain (pink noise, filtered)
+		const noise1 = createNoiseBuffer(ctx, 8, "pink");
+		const src1 = ctx.createBufferSource();
+		src1.buffer = noise1;
+		src1.loop = true;
 
-		const hp = ctx.createBiquadFilter();
-		hp.type = "highpass";
-		hp.frequency.value = 400;
+		const hp1 = ctx.createBiquadFilter();
+		hp1.type = "highpass";
+		hp1.frequency.value = 500;
 
-		const lp = ctx.createBiquadFilter();
-		lp.type = "lowpass";
-		lp.frequency.value = 3500;
+		const lp1 = ctx.createBiquadFilter();
+		lp1.type = "lowpass";
+		lp1.frequency.value = 4000;
 
-		const band = ctx.createBiquadFilter();
-		band.type = "bandpass";
-		band.frequency.value = 1200;
-		band.Q.value = 0.8;
+		const gain1 = ctx.createGain();
+		gain1.gain.value = 0.18;
 
-		const gain = ctx.createGain();
-		gain.gain.value = 0.25;
+		src1.connect(hp1);
+		hp1.connect(lp1);
+		lp1.connect(gain1);
 
-		const reverb = createReverb(ctx, 0.8, 0.25);
+		// Layer 2: Mid-range rain texture (brown noise, narrower band)
+		const noise2 = createNoiseBuffer(ctx, 8, "brown");
+		const src2 = ctx.createBufferSource();
+		src2.buffer = noise2;
+		src2.loop = true;
 
-		src.connect(hp);
-		hp.connect(lp);
-		lp.connect(band);
-		band.connect(gain);
-		gain.connect(reverb.input);
-		reverb.output.connect(dest);
+		const bp2 = ctx.createBiquadFilter();
+		bp2.type = "bandpass";
+		bp2.frequency.value = 1800;
+		bp2.Q.value = 0.6;
 
-		const lfo = createLFO(ctx, 0.3, 300, hp.frequency);
-		const lfo2 = createLFO(ctx, 0.15, 200, band.frequency);
+		const gain2 = ctx.createGain();
+		gain2.gain.value = 0.12;
 
+		src2.connect(bp2);
+		bp2.connect(gain2);
+
+		// Layer 3: Low rumble (distant rain)
+		const noise3 = createNoiseBuffer(ctx, 8, "brown");
+		const src3 = ctx.createBufferSource();
+		src3.buffer = noise3;
+		src3.loop = true;
+
+		const lp3 = ctx.createBiquadFilter();
+		lp3.type = "lowpass";
+		lp3.frequency.value = 200;
+
+		const gain3 = ctx.createGain();
+		gain3.gain.value = 0.06;
+
+		src3.connect(lp3);
+		lp3.connect(gain3);
+
+		// Merge layers into reverb
+		const reverb = createReverb(ctx, 1.0, 0.3);
+		const mixGain = ctx.createGain();
+		mixGain.gain.value = 1;
+
+		gain1.connect(reverb.input);
+		gain2.connect(reverb.input);
+		gain3.connect(reverb.input);
+		reverb.output.connect(mixGain);
+		mixGain.connect(dest);
+
+		// Also send a dry signal for clarity
+		gain1.connect(dest);
+		gain2.connect(dest);
+
+		// LFOs for natural variation
+		const lfo1 = createLFO(ctx, 0.25, 400, hp1.frequency);
+		const lfo2 = createLFO(ctx, 0.15, 300, bp2.frequency);
+		const lfo3 = createLFO(ctx, 0.08, 0.04, gain1.gain);
+
+		// Realistic drip layer: multiple independent drip sources with varied timing
 		const drips: { stop: () => void }[] = [];
-		let dripInterval: ReturnType<typeof setInterval> | null = null;
-		dripInterval = setInterval(
+		const createDrip = () => {
+			const osc = ctx.createOscillator();
+			const g = ctx.createGain();
+			const dripFilter = ctx.createBiquadFilter();
+			dripFilter.type = "bandpass";
+			dripFilter.frequency.value = 700 + Math.random() * 900;
+			dripFilter.Q.value = 6 + Math.random() * 6;
+
+			osc.type = "triangle";
+			osc.frequency.value = 600 + Math.random() * 1000;
+
+			const now = ctx.currentTime;
+			g.gain.setValueAtTime(0, now);
+			g.gain.linearRampToValueAtTime(
+				0.012 + Math.random() * 0.018,
+				now + 0.006,
+			);
+			g.gain.exponentialRampToValueAtTime(
+				0.001,
+				now + 0.08 + Math.random() * 0.14,
+			);
+
+			const panner = createStereoPanner(ctx);
+			panner.pan.value = Math.random() * 2 - 1;
+
+			osc.connect(dripFilter);
+			dripFilter.connect(g);
+			g.connect(panner);
+			panner.connect(dest);
+
+			osc.start(now);
+			osc.stop(now + 0.25);
+		};
+
+		// Multiple drip intervals at different rates for density
+		const dripInterval1 = setInterval(
 			() => {
-				const osc = ctx.createOscillator();
-				const g = ctx.createGain();
-				const dripFilter = ctx.createBiquadFilter();
-				dripFilter.type = "bandpass";
-				dripFilter.frequency.value = 900 + Math.random() * 700;
-				dripFilter.Q.value = 8;
-				osc.type = "triangle";
-				osc.frequency.value = 700 + Math.random() * 900;
-				g.gain.setValueAtTime(0, ctx.currentTime);
-				g.gain.linearRampToValueAtTime(
-					0.015 + Math.random() * 0.02,
-					ctx.currentTime + 0.008,
-				);
-				g.gain.exponentialRampToValueAtTime(
-					0.001,
-					ctx.currentTime + 0.1 + Math.random() * 0.12,
-				);
-				const panner = createStereoPanner(ctx);
-				panner.pan.value = Math.random() * 2 - 1;
-				osc.connect(dripFilter);
-				dripFilter.connect(g);
-				g.connect(panner);
-				panner.connect(dest);
-				osc.start(ctx.currentTime);
-				osc.stop(ctx.currentTime + 0.25);
+				createDrip();
+				if (Math.random() > 0.4) createDrip();
 			},
-			220 + Math.random() * 380,
+			150 + Math.random() * 200,
+		);
+		const dripInterval2 = setInterval(
+			() => {
+				createDrip();
+			},
+			300 + Math.random() * 400,
 		);
 
-		src.start();
+		src1.start();
+		src2.start();
+		src3.start();
 
 		this.state.set("rain", {
 			stop: () => {
 				try {
-					src.stop();
+					src1.stop();
 				} catch {}
 				try {
-					lfo.stop();
+					src2.stop();
+				} catch {}
+				try {
+					src3.stop();
+				} catch {}
+				try {
+					lfo1.stop();
 				} catch {}
 				try {
 					lfo2.stop();
 				} catch {}
+				try {
+					lfo3.stop();
+				} catch {}
 			},
 			cleanup: () => {
-				if (dripInterval) clearInterval(dripInterval);
+				clearInterval(dripInterval1);
+				clearInterval(dripInterval2);
 			},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.25, ctx.currentTime, 0.05);
+				gain1.gain.setTargetAtTime(v * 0.18, ctx.currentTime, 0.05);
+				gain2.gain.setTargetAtTime(v * 0.12, ctx.currentTime, 0.05);
+				gain3.gain.setTargetAtTime(v * 0.06, ctx.currentTime, 0.05);
 			},
 		});
 	}
 
 	// ── Wind ──────────────────────────────────────────────
 	private startWind(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 6, "brown");
-		const src = ctx.createBufferSource();
-		src.buffer = noise;
-		src.loop = true;
+		// Layer 1: Deep wind body
+		const noise1 = createNoiseBuffer(ctx, 8, "brown");
+		const src1 = ctx.createBufferSource();
+		src1.buffer = noise1;
+		src1.loop = true;
 
-		const lp = ctx.createBiquadFilter();
-		lp.type = "lowpass";
-		lp.frequency.value = 500;
+		const lp1 = ctx.createBiquadFilter();
+		lp1.type = "lowpass";
+		lp1.frequency.value = 400;
 
-		const hp = ctx.createBiquadFilter();
-		hp.type = "highpass";
-		hp.frequency.value = 80;
+		const hp1 = ctx.createBiquadFilter();
+		hp1.type = "highpass";
+		hp1.frequency.value = 60;
 
-		const gain = ctx.createGain();
-		gain.gain.value = 0.2;
+		const gain1 = ctx.createGain();
+		gain1.gain.value = 0.16;
 
-		const reverb = createReverb(ctx, 2, 0.4);
+		src1.connect(lp1);
+		lp1.connect(hp1);
+		hp1.connect(gain1);
 
-		src.connect(lp);
-		lp.connect(hp);
-		hp.connect(gain);
-		gain.connect(reverb.input);
-		reverb.output.connect(dest);
+		// Layer 2: Mid howl (narrower band)
+		const noise2 = createNoiseBuffer(ctx, 8, "pink");
+		const src2 = ctx.createBufferSource();
+		src2.buffer = noise2;
+		src2.loop = true;
 
-		const lfoFreq = createLFO(
-			ctx,
-			0.06 + Math.random() * 0.04,
-			350,
-			lp.frequency,
-		);
-		const lfoGain2 = ctx.createOscillator();
-		const gGain = ctx.createGain();
-		lfoGain2.type = "sine";
-		lfoGain2.frequency.value = 0.08 + Math.random() * 0.06;
-		gGain.gain.value = 0.08;
-		lfoGain2.connect(gGain);
-		gGain.connect(gain.gain);
-		lfoGain2.start();
+		const bp2 = ctx.createBiquadFilter();
+		bp2.type = "bandpass";
+		bp2.frequency.value = 300;
+		bp2.Q.value = 2;
 
-		src.start();
+		const gain2 = ctx.createGain();
+		gain2.gain.value = 0.06;
+
+		src2.connect(bp2);
+		bp2.connect(gain2);
+
+		// Layer 3: High whistle
+		const noise3 = createNoiseBuffer(ctx, 8, "white");
+		const src3 = ctx.createBufferSource();
+		src3.buffer = noise3;
+		src3.loop = true;
+
+		const bp3 = ctx.createBiquadFilter();
+		bp3.type = "bandpass";
+		bp3.frequency.value = 800;
+		bp3.Q.value = 4;
+
+		const gain3 = ctx.createGain();
+		gain3.gain.value = 0.02;
+
+		src3.connect(bp3);
+		bp3.connect(gain3);
+
+		const reverb = createReverb(ctx, 2.5, 0.45);
+		const mixGain = ctx.createGain();
+		mixGain.gain.value = 1;
+
+		gain1.connect(reverb.input);
+		gain2.connect(reverb.input);
+		gain3.connect(reverb.input);
+		reverb.output.connect(mixGain);
+		mixGain.connect(dest);
+
+		// Also direct for clarity
+		gain1.connect(dest);
+
+		const lfoFreq = createLFO(ctx, 0.06, 300, lp1.frequency);
+		const lfoHowl = createLFO(ctx, 0.04, 200, bp2.frequency);
+		const lfoWhistle = createLFO(ctx, 0.08, 150, bp3.frequency);
+		const lfoVol = createLFO(ctx, 0.05, 0.05, gain1.gain);
+
+		src1.start();
+		src2.start();
+		src3.start();
 
 		this.state.set("wind", {
 			stop: () => {
 				try {
-					src.stop();
+					src1.stop();
+				} catch {}
+				try {
+					src2.stop();
+				} catch {}
+				try {
+					src3.stop();
 				} catch {}
 				try {
 					lfoFreq.stop();
 				} catch {}
 				try {
-					lfoGain2.stop();
+					lfoHowl.stop();
+				} catch {}
+				try {
+					lfoWhistle.stop();
+				} catch {}
+				try {
+					lfoVol.stop();
 				} catch {}
 			},
 			cleanup: () => {},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.2, ctx.currentTime, 0.05);
+				gain1.gain.setTargetAtTime(v * 0.16, ctx.currentTime, 0.05);
+				gain2.gain.setTargetAtTime(v * 0.06, ctx.currentTime, 0.05);
+				gain3.gain.setTargetAtTime(v * 0.02, ctx.currentTime, 0.05);
 			},
 		});
 	}
 
 	// ── Ocean ──────────────────────────────────────────────
 	private startOcean(ctx: AudioContext, dest: AudioNode) {
-		const len = ctx.sampleRate * 12;
+		// Layer 1: Wave body (slow modulation of brown noise)
+		const len = ctx.sampleRate * 14;
 		const buffer = ctx.createBuffer(2, len, ctx.sampleRate);
 		const ch0 = buffer.getChannelData(0);
 		const ch1 = buffer.getChannelData(1);
 
 		for (let i = 0; i < len; i++) {
 			const t = i / ctx.sampleRate;
-			const wave1 = Math.sin(t * 0.08);
-			const wave2 = Math.sin(t * 0.12 + 1.3);
-			const wave3 = Math.sin(t * 0.21 + 2.7);
+			// Multiple wave cycles at different periods
+			const wave1 = Math.sin(t * 0.07);
+			const wave2 = Math.sin(t * 0.11 + 1.3);
+			const wave3 = Math.sin(t * 0.19 + 2.7);
+			const wave4 = Math.sin(t * 0.03 + 0.5); // Very slow swell
 			const envelope =
-				0.4 + (0.6 * (wave1 * 0.5 + wave2 * 0.3 + wave3 * 0.2 + 1)) / 2;
+				0.35 +
+				0.65 *
+					((wave1 * 0.35 + wave2 * 0.25 + wave3 * 0.15 + wave4 * 0.25 + 1) / 2);
 			const noise = Math.random() * 2 - 1;
-			ch0[i] = noise * envelope * 0.7;
-			ch1[i] = noise * envelope * 0.7 * (0.9 + 0.2 * Math.sin(t * 0.15));
+			ch0[i] = noise * envelope * 0.65;
+			// Slight stereo offset for width
+			ch1[i] =
+				noise * (envelope * 0.65 * (0.88 + 0.24 * Math.sin(t * 0.13 + 0.8)));
 		}
 
 		const src = ctx.createBufferSource();
 		src.buffer = buffer;
 		src.loop = true;
 
+		// Low body
 		const lp = ctx.createBiquadFilter();
 		lp.type = "lowpass";
-		lp.frequency.value = 600;
+		lp.frequency.value = 500;
 
+		// High hiss for foam/spray
 		const hp = ctx.createBiquadFilter();
 		hp.type = "highpass";
-		hp.frequency.value = 80;
+		hp.frequency.value = 100;
+
+		const hp2 = ctx.createBiquadFilter();
+		hp2.type = "highpass";
+		hp2.frequency.value = 2000;
+
+		const gainHiss = ctx.createGain();
+		gainHiss.gain.value = 0.06;
 
 		const band = ctx.createBiquadFilter();
 		band.type = "bandpass";
-		band.frequency.value = 300;
-		band.Q.value = 0.5;
+		band.frequency.value = 350;
+		band.Q.value = 0.4;
 
 		const gain = ctx.createGain();
 		gain.gain.value = 0.28;
 
-		const reverb = createReverb(ctx, 1.5, 0.3);
+		const reverb = createReverb(ctx, 1.8, 0.35);
 
 		src.connect(lp);
 		lp.connect(band);
@@ -572,8 +757,14 @@ class AudioManager {
 		gain.connect(reverb.input);
 		reverb.output.connect(dest);
 
+		// Foam layer
+		src.connect(hp2);
+		hp2.connect(gainHiss);
+		gainHiss.connect(dest);
+
 		const lfo = createLFO(ctx, 0.04, 200, lp.frequency);
 		const lfo2 = createLFO(ctx, 0.07, 100, band.frequency);
+		const lfo3 = createLFO(ctx, 0.03, 0.05, gain.gain);
 
 		src.start();
 
@@ -588,10 +779,14 @@ class AudioManager {
 				try {
 					lfo2.stop();
 				} catch {}
+				try {
+					lfo3.stop();
+				} catch {}
 			},
 			cleanup: () => {},
 			setVolume: (v) => {
 				gain.gain.setTargetAtTime(v * 0.28, ctx.currentTime, 0.05);
+				gainHiss.gain.setTargetAtTime(v * 0.06, ctx.currentTime, 0.05);
 			},
 		});
 	}
@@ -691,43 +886,82 @@ class AudioManager {
 
 	// ── Cafe ──────────────────────────────────────────────
 	private startCafe(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 6, "pink");
+		// Base ambient murmur (filtered pink noise simulating crowd)
+		const noise = createNoiseBuffer(ctx, 8, "pink");
 		const src = ctx.createBufferSource();
 		src.buffer = noise;
 		src.loop = true;
 
 		const lp = ctx.createBiquadFilter();
 		lp.type = "lowpass";
-		lp.frequency.value = 2500;
+		lp.frequency.value = 2000;
 
 		const hp = ctx.createBiquadFilter();
 		hp.type = "highpass";
-		hp.frequency.value = 200;
+		hp.frequency.value = 150;
 
-		const gain = ctx.createGain();
-		gain.gain.value = 0.12;
+		// Formant-like filtering to simulate vocal murmur
+		const formant1 = ctx.createBiquadFilter();
+		formant1.type = "bandpass";
+		formant1.frequency.value = 400;
+		formant1.Q.value = 2;
+
+		const formant2 = ctx.createBiquadFilter();
+		formant2.type = "bandpass";
+		formant2.frequency.value = 1200;
+		formant2.Q.value = 1.5;
+
+		const formant3 = ctx.createBiquadFilter();
+		formant3.type = "bandpass";
+		formant3.frequency.value = 2500;
+		formant3.Q.value = 1;
+
+		const gainMurmur = ctx.createGain();
+		gainMurmur.gain.value = 0.08;
+
+		const gainF1 = ctx.createGain();
+		gainF1.gain.value = 0.04;
+		const gainF2 = ctx.createGain();
+		gainF2.gain.value = 0.03;
+		const gainF3 = ctx.createGain();
+		gainF3.gain.value = 0.02;
 
 		const reverb = createReverb(ctx, 0.6, 0.2);
 
 		src.connect(hp);
 		hp.connect(lp);
-		lp.connect(gain);
-		gain.connect(reverb.input);
+		lp.connect(gainMurmur);
+		gainMurmur.connect(reverb.input);
+
+		src.connect(formant1);
+		formant1.connect(gainF1);
+		gainF1.connect(reverb.input);
+
+		src.connect(formant2);
+		formant2.connect(gainF2);
+		gainF2.connect(reverb.input);
+
+		src.connect(formant3);
+		formant3.connect(gainF3);
+		gainF3.connect(reverb.input);
+
 		reverb.output.connect(dest);
 
+		// Clutter: cups, plates, chairs
 		const clutterInterval = setInterval(
 			() => {
 				const type = Math.random();
-				if (type < 0.4) {
+				if (type < 0.3) {
+					// Cup clink (bright, short)
 					const osc = ctx.createOscillator();
 					const g = ctx.createGain();
 					osc.type = "sine";
-					osc.frequency.value = 800 + Math.random() * 1200;
+					osc.frequency.value = 2000 + Math.random() * 2000;
 					g.gain.setValueAtTime(0, ctx.currentTime);
-					g.gain.linearRampToValueAtTime(0.02, ctx.currentTime + 0.005);
+					g.gain.linearRampToValueAtTime(0.02, ctx.currentTime + 0.003);
 					g.gain.exponentialRampToValueAtTime(
 						0.001,
-						ctx.currentTime + 0.06 + Math.random() * 0.08,
+						ctx.currentTime + 0.04 + Math.random() * 0.04,
 					);
 					const panner = createStereoPanner(ctx);
 					panner.pan.value = Math.random() * 2 - 1;
@@ -735,26 +969,71 @@ class AudioManager {
 					g.connect(panner);
 					panner.connect(dest);
 					osc.start(ctx.currentTime);
-					osc.stop(ctx.currentTime + 0.15);
-				} else if (type < 0.6) {
-					const noise2 = createNoiseBuffer(ctx, 0.1, "pink");
+					osc.stop(ctx.currentTime + 0.08);
+				} else if (type < 0.5) {
+					// Saucer/plate scrape
+					const noise2 = createNoiseBuffer(ctx, 0.06, "pink");
 					const s = ctx.createBufferSource();
 					s.buffer = noise2;
 					const g = ctx.createGain();
-					g.gain.value = 0.02;
+					g.gain.value = 0.015;
 					const bp = ctx.createBiquadFilter();
 					bp.type = "bandpass";
-					bp.frequency.value = 2000 + Math.random() * 1500;
+					bp.frequency.value = 1500 + Math.random() * 1500;
 					bp.Q.value = 2;
+					const pan = createStereoPanner(ctx);
+					pan.pan.value = Math.random() * 2 - 1;
 					s.connect(bp);
 					bp.connect(g);
-					g.connect(dest);
+					g.connect(pan);
+					pan.connect(dest);
 					s.start(ctx.currentTime);
-					s.stop(ctx.currentTime + 0.1);
+					s.stop(ctx.currentTime + 0.06);
+				} else if (type < 0.7) {
+					// Chair scrape
+					const noise3 = createNoiseBuffer(ctx, 0.12, "brown");
+					const s = ctx.createBufferSource();
+					s.buffer = noise3;
+					const g = ctx.createGain();
+					g.gain.setValueAtTime(0, ctx.currentTime);
+					g.gain.linearRampToValueAtTime(0.012, ctx.currentTime + 0.02);
+					g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+					const bp = ctx.createBiquadFilter();
+					bp.type = "bandpass";
+					bp.frequency.value = 300 + Math.random() * 200;
+					bp.Q.value = 1;
+					const pan = createStereoPanner(ctx);
+					pan.pan.value = Math.random() * 2 - 1;
+					s.connect(bp);
+					bp.connect(g);
+					g.connect(pan);
+					pan.connect(dest);
+					s.start(ctx.currentTime);
+					s.stop(ctx.currentTime + 0.12);
+				} else {
+					// Distant door or footstep
+					const osc = ctx.createOscillator();
+					const g = ctx.createGain();
+					osc.type = "sine";
+					osc.frequency.value = 80 + Math.random() * 60;
+					g.gain.setValueAtTime(0, ctx.currentTime);
+					g.gain.linearRampToValueAtTime(0.008, ctx.currentTime + 0.01);
+					g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+					const pan = createStereoPanner(ctx);
+					pan.pan.value = Math.random() * 2 - 1;
+					osc.connect(g);
+					g.connect(pan);
+					pan.connect(dest);
+					osc.start(ctx.currentTime);
+					osc.stop(ctx.currentTime + 0.1);
 				}
 			},
-			500 + Math.random() * 1500,
+			400 + Math.random() * 1200,
 		);
+
+		// LFOs for natural murmur variation
+		const lfo1 = createLFO(ctx, 0.08, 200, formant1.frequency);
+		const lfo2 = createLFO(ctx, 0.06, 150, formant2.frequency);
 
 		src.start();
 
@@ -763,12 +1042,21 @@ class AudioManager {
 				try {
 					src.stop();
 				} catch {}
+				try {
+					lfo1.stop();
+				} catch {}
+				try {
+					lfo2.stop();
+				} catch {}
 			},
 			cleanup: () => {
 				clearInterval(clutterInterval);
 			},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.12, ctx.currentTime, 0.05);
+				gainMurmur.gain.setTargetAtTime(v * 0.08, ctx.currentTime, 0.05);
+				gainF1.gain.setTargetAtTime(v * 0.04, ctx.currentTime, 0.05);
+				gainF2.gain.setTargetAtTime(v * 0.03, ctx.currentTime, 0.05);
+				gainF3.gain.setTargetAtTime(v * 0.02, ctx.currentTime, 0.05);
 			},
 		});
 	}
@@ -809,6 +1097,7 @@ class AudioManager {
 
 	// ── Thunder ────────────────────────────────────────────
 	private startThunder(ctx: AudioContext, dest: AudioNode) {
+		// Base rain/ambient layer
 		const noise = createNoiseBuffer(ctx, 8, "brown");
 		const src = ctx.createBufferSource();
 		src.buffer = noise;
@@ -816,31 +1105,84 @@ class AudioManager {
 
 		const lp = ctx.createBiquadFilter();
 		lp.type = "lowpass";
-		lp.frequency.value = 150;
+		lp.frequency.value = 180;
+
+		const hp = ctx.createBiquadFilter();
+		hp.type = "highpass";
+		hp.frequency.value = 30;
 
 		const gain = ctx.createGain();
-		gain.gain.value = 0.2;
+		gain.gain.value = 0.15;
 
-		const reverb = createReverb(ctx, 3, 0.5);
+		const reverb = createReverb(ctx, 3.5, 0.55);
 
 		src.connect(lp);
-		lp.connect(gain);
+		lp.connect(hp);
+		hp.connect(gain);
 		gain.connect(reverb.input);
 		reverb.output.connect(dest);
 
+		// Rain layer mixed in
+		const rainNoise = createNoiseBuffer(ctx, 6, "pink");
+		const rainSrc = ctx.createBufferSource();
+		rainSrc.buffer = rainNoise;
+		rainSrc.loop = true;
+		const rainHp = ctx.createBiquadFilter();
+		rainHp.type = "highpass";
+		rainHp.frequency.value = 600;
+		const rainLp = ctx.createBiquadFilter();
+		rainLp.type = "lowpass";
+		rainLp.frequency.value = 3500;
+		const rainGain = ctx.createGain();
+		rainGain.gain.value = 0.08;
+		rainSrc.connect(rainHp);
+		rainHp.connect(rainLp);
+		rainLp.connect(rainGain);
+		rainGain.connect(dest);
+		rainSrc.start();
+
 		const rumbleInterval = setInterval(
 			() => {
-				const duration = 0.5 + Math.random() * 1.5;
-				const start = ctx.currentTime + Math.random() * 2;
+				const duration = 0.8 + Math.random() * 2;
+				const start = ctx.currentTime + Math.random() * 3;
 				const vol = gain.gain.value;
-				gain.gain.setValueAtTime(vol * 0.5, start);
-				gain.gain.linearRampToValueAtTime(vol * 2, start + 0.1);
-				gain.gain.exponentialRampToValueAtTime(vol * 0.3, start + duration);
 
-				lp.frequency.setValueAtTime(120, start);
-				lp.frequency.exponentialRampToValueAtTime(60, start + 0.3);
+				// Initial crack (sharp transient)
+				const crackOsc = ctx.createOscillator();
+				const crackGain = ctx.createGain();
+				const crackFilter = ctx.createBiquadFilter();
+				crackFilter.type = "lowpass";
+				crackFilter.frequency.value = 300;
+				crackOsc.type = "sawtooth";
+				crackOsc.frequency.value = 40 + Math.random() * 60;
+				crackGain.gain.setValueAtTime(0, start);
+				crackGain.gain.linearRampToValueAtTime(vol * 2.5, start + 0.01);
+				crackGain.gain.exponentialRampToValueAtTime(vol * 0.3, start + 0.15);
+				crackOsc.connect(crackFilter);
+				crackFilter.connect(crackGain);
+				crackGain.connect(dest);
+				crackOsc.start(start);
+				crackOsc.stop(start + 0.2);
+
+				// Rolling rumble body
+				gain.gain.setValueAtTime(vol * 0.4, start);
+				gain.gain.linearRampToValueAtTime(vol * 2.2, start + 0.08);
+				gain.gain.exponentialRampToValueAtTime(vol * 0.6, start + 0.5);
+				gain.gain.exponentialRampToValueAtTime(vol * 0.15, start + duration);
+
+				// Low filter sweep for rumble
+				lp.frequency.setValueAtTime(200, start);
+				lp.frequency.exponentialRampToValueAtTime(60, start + 0.5);
+				lp.frequency.exponentialRampToValueAtTime(120, start + duration);
+
+				// Secondary echo rumble (distant)
+				if (Math.random() > 0.5) {
+					const echoStart = start + 0.4 + Math.random() * 0.5;
+					gain.gain.setValueAtTime(vol * 0.3, echoStart);
+					gain.gain.exponentialRampToValueAtTime(vol * 0.05, echoStart + 1.5);
+				}
 			},
-			6000 + Math.random() * 8000,
+			5000 + Math.random() * 10000,
 		);
 
 		src.start();
@@ -850,65 +1192,115 @@ class AudioManager {
 				try {
 					src.stop();
 				} catch {}
+				try {
+					rainSrc.stop();
+				} catch {}
 			},
 			cleanup: () => {
 				clearInterval(rumbleInterval);
 			},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.2, ctx.currentTime, 0.05);
+				gain.gain.setTargetAtTime(v * 0.15, ctx.currentTime, 0.05);
+				rainGain.gain.setTargetAtTime(v * 0.08, ctx.currentTime, 0.05);
 			},
 		});
 	}
 
 	// ── Night ──────────────────────────────────────────────
 	private startNight(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 6, "brown");
+		const noise = createNoiseBuffer(ctx, 8, "brown");
 		const src = ctx.createBufferSource();
 		src.buffer = noise;
 		src.loop = true;
 
 		const lp = ctx.createBiquadFilter();
 		lp.type = "lowpass";
-		lp.frequency.value = 300;
+		lp.frequency.value = 250;
 
 		const gain = ctx.createGain();
-		gain.gain.value = 0.15;
+		gain.gain.value = 0.12;
+
+		const reverb = createReverb(ctx, 1.5, 0.3);
 
 		src.connect(lp);
 		lp.connect(gain);
-		gain.connect(dest);
+		gain.connect(reverb.input);
+		reverb.output.connect(dest);
+
+		// Cricket chirper with realistic trill pattern
+		const cricket = (baseFreq: number, chirps: number, chirpRate: number) => {
+			const now = ctx.currentTime;
+			for (let i = 0; i < chirps; i++) {
+				const t = now + i / chirpRate;
+				const osc = ctx.createOscillator();
+				const g = ctx.createGain();
+				osc.type = "sine";
+				// Rapid frequency modulation within each chirp
+				osc.frequency.setValueAtTime(baseFreq, t);
+				osc.frequency.setValueAtTime(baseFreq * 1.08, t + 0.008);
+				osc.frequency.setValueAtTime(baseFreq, t + 0.016);
+				osc.frequency.setValueAtTime(baseFreq * 1.05, t + 0.024);
+				g.gain.setValueAtTime(0, t);
+				g.gain.linearRampToValueAtTime(0.012, t + 0.003);
+				g.gain.setValueAtTime(0.012, t + 0.025);
+				g.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+				const pan = createStereoPanner(ctx);
+				pan.pan.value = Math.random() * 2 - 1;
+				osc.connect(g);
+				g.connect(pan);
+				pan.connect(dest);
+				osc.start(t);
+				osc.stop(t + 0.04);
+			}
+		};
 
 		const cricketInterval = setInterval(
 			() => {
-				for (let i = 0; i < 3 + Math.floor(Math.random() * 4); i++) {
+				// Multiple cricket voices at different frequencies
+				cricket(
+					3800 + Math.random() * 800,
+					4 + Math.floor(Math.random() * 5),
+					25,
+				);
+				if (Math.random() > 0.5) {
+					cricket(
+						4200 + Math.random() * 600,
+						3 + Math.floor(Math.random() * 3),
+						20,
+					);
+				}
+			},
+			1500 + Math.random() * 2500,
+		);
+
+		// Occasional distant owl
+		const owlInterval = setInterval(
+			() => {
+				const now = ctx.currentTime;
+				const base = 380 + Math.random() * 60;
+				for (let i = 0; i < 2; i++) {
 					const osc = ctx.createOscillator();
 					const g = ctx.createGain();
 					osc.type = "sine";
-					const baseFreq = 3200 + Math.random() * 1200;
-					osc.frequency.setValueAtTime(baseFreq, ctx.currentTime + i * 0.04);
-					osc.frequency.setValueAtTime(
-						baseFreq * 1.1,
-						ctx.currentTime + i * 0.04 + 0.02,
+					osc.frequency.setValueAtTime(base, now + i * 0.8);
+					osc.frequency.linearRampToValueAtTime(
+						base * 0.85,
+						now + i * 0.8 + 0.3,
 					);
-					g.gain.setValueAtTime(0, ctx.currentTime + i * 0.04);
-					g.gain.linearRampToValueAtTime(
-						0.015 + Math.random() * 0.01,
-						ctx.currentTime + i * 0.04 + 0.01,
-					);
-					g.gain.exponentialRampToValueAtTime(
-						0.001,
-						ctx.currentTime + i * 0.04 + 0.03,
-					);
-					const panner = createStereoPanner(ctx);
-					panner.pan.value = Math.random() * 2 - 1;
+					g.gain.setValueAtTime(0, now + i * 0.8);
+					g.gain.linearRampToValueAtTime(0.008, now + i * 0.8 + 0.05);
+					g.gain.setValueAtTime(0.008, now + i * 0.8 + 0.25);
+					g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.8 + 0.5);
+					const pan = createStereoPanner(ctx);
+					pan.pan.value = (Math.random() - 0.5) * 0.6;
 					osc.connect(g);
-					g.connect(panner);
-					panner.connect(dest);
-					osc.start(ctx.currentTime + i * 0.04);
-					osc.stop(ctx.currentTime + i * 0.04 + 0.05);
+					g.connect(pan);
+					pan.connect(dest);
+					osc.start(now + i * 0.8);
+					osc.stop(now + i * 0.8 + 0.6);
 				}
 			},
-			2000 + Math.random() * 3000,
+			12000 + Math.random() * 10000,
 		);
 
 		src.start();
@@ -921,37 +1313,39 @@ class AudioManager {
 			},
 			cleanup: () => {
 				clearInterval(cricketInterval);
+				clearInterval(owlInterval);
 			},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.15, ctx.currentTime, 0.05);
+				gain.gain.setTargetAtTime(v * 0.12, ctx.currentTime, 0.05);
 			},
 		});
 	}
 
 	// ── Fire ──────────────────────────────────────────────
 	private startFire(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 6, "pink");
+		// Fire body: warm brown noise with modulation
+		const noise = createNoiseBuffer(ctx, 8, "brown");
 		const src = ctx.createBufferSource();
 		src.buffer = noise;
 		src.loop = true;
 
 		const lp = ctx.createBiquadFilter();
 		lp.type = "lowpass";
-		lp.frequency.value = 600;
+		lp.frequency.value = 500;
 
 		const hp = ctx.createBiquadFilter();
 		hp.type = "highpass";
-		hp.frequency.value = 100;
+		hp.frequency.value = 80;
 
 		const band = ctx.createBiquadFilter();
 		band.type = "bandpass";
-		band.frequency.value = 350;
-		band.Q.value = 0.6;
+		band.frequency.value = 300;
+		band.Q.value = 0.5;
 
 		const gain = ctx.createGain();
-		gain.gain.value = 0.18;
+		gain.gain.value = 0.2;
 
-		const reverb = createReverb(ctx, 0.8, 0.15);
+		const reverb = createReverb(ctx, 0.6, 0.12);
 
 		src.connect(hp);
 		hp.connect(band);
@@ -960,33 +1354,106 @@ class AudioManager {
 		gain.connect(reverb.input);
 		reverb.output.connect(dest);
 
-		const lfo = createLFO(ctx, 0.1 + Math.random() * 0.1, 250, band.frequency);
-		const lfo2 = createLFO(ctx, 0.06, 0.05, gain.gain);
+		const lfo = createLFO(
+			ctx,
+			0.12 + Math.random() * 0.08,
+			200,
+			band.frequency,
+		);
+		const lfo2 = createLFO(ctx, 0.07, 0.06, gain.gain);
 
+		// Crackle layer: varied pops, snaps, and hisses
 		const crackleInterval = setInterval(
 			() => {
-				const osc = ctx.createOscillator();
-				const g = ctx.createGain();
-				osc.type = "sawtooth";
-				osc.frequency.value = 400 + Math.random() * 3000;
-				g.gain.setValueAtTime(0, ctx.currentTime);
-				g.gain.linearRampToValueAtTime(
-					0.01 + Math.random() * 0.02,
-					ctx.currentTime + 0.005,
-				);
-				g.gain.exponentialRampToValueAtTime(
-					0.001,
-					ctx.currentTime + 0.02 + Math.random() * 0.04,
-				);
-				const panner = createStereoPanner(ctx);
-				panner.pan.value = Math.random() * 2 - 1;
-				osc.connect(g);
-				g.connect(panner);
-				panner.connect(dest);
-				osc.start(ctx.currentTime);
-				osc.stop(ctx.currentTime + 0.06);
+				const type = Math.random();
+				if (type < 0.35) {
+					// Sharp crackle snap
+					const osc = ctx.createOscillator();
+					const g = ctx.createGain();
+					osc.type = "sawtooth";
+					osc.frequency.value = 500 + Math.random() * 3500;
+					g.gain.setValueAtTime(0, ctx.currentTime);
+					g.gain.linearRampToValueAtTime(
+						0.015 + Math.random() * 0.025,
+						ctx.currentTime + 0.003,
+					);
+					g.gain.exponentialRampToValueAtTime(
+						0.001,
+						ctx.currentTime + 0.015 + Math.random() * 0.03,
+					);
+					const panner = createStereoPanner(ctx);
+					panner.pan.value = Math.random() * 2 - 1;
+					osc.connect(g);
+					g.connect(panner);
+					panner.connect(dest);
+					osc.start(ctx.currentTime);
+					osc.stop(ctx.currentTime + 0.05);
+				} else if (type < 0.55) {
+					// Low ember pop
+					const osc = ctx.createOscillator();
+					const g = ctx.createGain();
+					osc.type = "sine";
+					osc.frequency.value = 150 + Math.random() * 300;
+					g.gain.setValueAtTime(0, ctx.currentTime);
+					g.gain.linearRampToValueAtTime(
+						0.02 + Math.random() * 0.015,
+						ctx.currentTime + 0.005,
+					);
+					g.gain.exponentialRampToValueAtTime(
+						0.001,
+						ctx.currentTime + 0.04 + Math.random() * 0.06,
+					);
+					const panner = createStereoPanner(ctx);
+					panner.pan.value = Math.random() * 2 - 1;
+					osc.connect(g);
+					g.connect(panner);
+					panner.connect(dest);
+					osc.start(ctx.currentTime);
+					osc.stop(ctx.currentTime + 0.1);
+				} else if (type < 0.75) {
+					// Hiss (hot air escaping)
+					const noise2 = createNoiseBuffer(ctx, 0.08, "white");
+					const s = ctx.createBufferSource();
+					s.buffer = noise2;
+					const g = ctx.createGain();
+					g.gain.value = 0.008 + Math.random() * 0.008;
+					const bp = ctx.createBiquadFilter();
+					bp.type = "bandpass";
+					bp.frequency.value = 3000 + Math.random() * 2000;
+					bp.Q.value = 3;
+					const pan = createStereoPanner(ctx);
+					pan.pan.value = Math.random() * 2 - 1;
+					s.connect(bp);
+					bp.connect(g);
+					g.connect(pan);
+					pan.connect(dest);
+					s.start(ctx.currentTime);
+					s.stop(ctx.currentTime + 0.08);
+				} else {
+					// Bright pop
+					const osc = ctx.createOscillator();
+					const g = ctx.createGain();
+					osc.type = "triangle";
+					osc.frequency.value = 2000 + Math.random() * 2000;
+					g.gain.setValueAtTime(0, ctx.currentTime);
+					g.gain.linearRampToValueAtTime(
+						0.01 + Math.random() * 0.015,
+						ctx.currentTime + 0.002,
+					);
+					g.gain.exponentialRampToValueAtTime(
+						0.001,
+						ctx.currentTime + 0.01 + Math.random() * 0.02,
+					);
+					const pan = createStereoPanner(ctx);
+					pan.pan.value = Math.random() * 2 - 1;
+					osc.connect(g);
+					g.connect(pan);
+					pan.connect(dest);
+					osc.start(ctx.currentTime);
+					osc.stop(ctx.currentTime + 0.03);
+				}
 			},
-			100 + Math.random() * 300,
+			60 + Math.random() * 180,
 		);
 
 		src.start();
@@ -1007,35 +1474,36 @@ class AudioManager {
 				clearInterval(crackleInterval);
 			},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.18, ctx.currentTime, 0.05);
+				gain.gain.setTargetAtTime(v * 0.2, ctx.currentTime, 0.05);
 			},
 		});
 	}
 
 	// ── Stream ─────────────────────────────────────────────
 	private startStream(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 6, "pink");
+		// Base flow
+		const noise = createNoiseBuffer(ctx, 8, "pink");
 		const src = ctx.createBufferSource();
 		src.buffer = noise;
 		src.loop = true;
 
 		const hp = ctx.createBiquadFilter();
 		hp.type = "highpass";
-		hp.frequency.value = 600;
+		hp.frequency.value = 500;
 
 		const lp = ctx.createBiquadFilter();
 		lp.type = "lowpass";
-		lp.frequency.value = 3000;
+		lp.frequency.value = 3500;
 
 		const band = ctx.createBiquadFilter();
 		band.type = "bandpass";
-		band.frequency.value = 1500;
-		band.Q.value = 1.5;
+		band.frequency.value = 1200;
+		band.Q.value = 1.2;
 
 		const gain = ctx.createGain();
-		gain.gain.value = 0.2;
+		gain.gain.value = 0.18;
 
-		const reverb = createReverb(ctx, 0.5, 0.2);
+		const reverb = createReverb(ctx, 0.5, 0.18);
 
 		src.connect(hp);
 		hp.connect(band);
@@ -1043,9 +1511,45 @@ class AudioManager {
 		lp.connect(gain);
 		gain.connect(reverb.input);
 		reverb.output.connect(dest);
+		// Dry for clarity
+		gain.connect(dest);
 
-		const lfo = createLFO(ctx, 0.2 + Math.random() * 0.15, 500, band.frequency);
+		const lfo = createLFO(ctx, 0.18, 400, band.frequency);
 		const lfo2 = createLFO(ctx, 0.08, 200, lp.frequency);
+		const lfo3 = createLFO(ctx, 0.06, 0.03, gain.gain);
+
+		// Bubble layer
+		const bubbleInterval = setInterval(
+			() => {
+				const osc = ctx.createOscillator();
+				const g = ctx.createGain();
+				const filter = ctx.createBiquadFilter();
+				filter.type = "bandpass";
+				filter.frequency.value = 400 + Math.random() * 800;
+				filter.Q.value = 5 + Math.random() * 5;
+				osc.type = "sine";
+				osc.frequency.value = 300 + Math.random() * 500;
+				const now = ctx.currentTime;
+				g.gain.setValueAtTime(0, now);
+				g.gain.linearRampToValueAtTime(
+					0.008 + Math.random() * 0.008,
+					now + 0.004,
+				);
+				g.gain.exponentialRampToValueAtTime(
+					0.001,
+					now + 0.03 + Math.random() * 0.04,
+				);
+				const pan = createStereoPanner(ctx);
+				pan.pan.value = Math.random() * 2 - 1;
+				osc.connect(filter);
+				filter.connect(g);
+				g.connect(pan);
+				pan.connect(dest);
+				osc.start(now);
+				osc.stop(now + 0.06);
+			},
+			120 + Math.random() * 200,
+		);
 
 		src.start();
 
@@ -1060,10 +1564,15 @@ class AudioManager {
 				try {
 					lfo2.stop();
 				} catch {}
+				try {
+					lfo3.stop();
+				} catch {}
 			},
-			cleanup: () => {},
+			cleanup: () => {
+				clearInterval(bubbleInterval);
+			},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.2, ctx.currentTime, 0.05);
+				gain.gain.setTargetAtTime(v * 0.18, ctx.currentTime, 0.05);
 			},
 		});
 	}
@@ -1121,58 +1630,157 @@ class AudioManager {
 
 	// ── Birds ──────────────────────────────────────────────
 	private startBirds(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 4, "pink");
+		const noise = createNoiseBuffer(ctx, 6, "pink");
 		const src = ctx.createBufferSource();
 		src.buffer = noise;
 		src.loop = true;
 		const lp = ctx.createBiquadFilter();
 		lp.type = "lowpass";
-		lp.frequency.value = 2000;
+		lp.frequency.value = 1800;
 		const hp = ctx.createBiquadFilter();
 		hp.type = "highpass";
-		hp.frequency.value = 300;
+		hp.frequency.value = 200;
 		const gain = ctx.createGain();
-		gain.gain.value = 0.1;
+		gain.gain.value = 0.06;
+		const reverb = createReverb(ctx, 1.5, 0.3);
 		src.connect(hp);
 		hp.connect(lp);
 		lp.connect(gain);
-		gain.connect(dest);
+		gain.connect(reverb.input);
+		reverb.output.connect(dest);
 
+		// Bird call generator with frequency modulation
+		const chirp = (
+			baseFreq: number,
+			duration: number,
+			pattern: "up" | "down" | "warble" | "trill",
+		) => {
+			const osc = ctx.createOscillator();
+			const g = ctx.createGain();
+			osc.type = "sine";
+
+			const now = ctx.currentTime;
+			if (pattern === "up") {
+				osc.frequency.setValueAtTime(baseFreq, now);
+				osc.frequency.exponentialRampToValueAtTime(
+					baseFreq * 1.4,
+					now + duration * 0.3,
+				);
+				osc.frequency.exponentialRampToValueAtTime(
+					baseFreq * 1.1,
+					now + duration,
+				);
+			} else if (pattern === "down") {
+				osc.frequency.setValueAtTime(baseFreq * 1.3, now);
+				osc.frequency.exponentialRampToValueAtTime(
+					baseFreq * 0.8,
+					now + duration,
+				);
+			} else if (pattern === "warble") {
+				osc.frequency.setValueAtTime(baseFreq, now);
+				for (let t = 0; t < duration; t += 0.04) {
+					osc.frequency.setValueAtTime(
+						baseFreq * (1 + 0.15 * Math.sin(t * 30)),
+						now + t,
+					);
+				}
+			} else {
+				// Trill: rapid alternation
+				for (let t = 0; t < duration; t += 0.025) {
+					osc.frequency.setValueAtTime(
+						baseFreq * (1 + 0.2 * ((Math.floor(t / 0.025) % 2) * 2 - 1)),
+						now + t,
+					);
+				}
+			}
+
+			g.gain.setValueAtTime(0, now);
+			g.gain.linearRampToValueAtTime(0.025, now + 0.008);
+			g.gain.setValueAtTime(0.025, now + duration * 0.6);
+			g.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+			const pan = createStereoPanner(ctx);
+			pan.pan.value = Math.random() * 2 - 1;
+			osc.connect(g);
+			g.connect(pan);
+			pan.connect(dest);
+			osc.start(now);
+			osc.stop(now + duration + 0.01);
+		};
+
+		// Multiple independent bird "voices"
 		const intervals: ReturnType<typeof setInterval>[] = [];
-		for (let i = 0; i < 3; i++) {
-			const id = setInterval(
+
+		// Voice 1: Songbird (frequent, varied)
+		intervals.push(
+			setInterval(
 				() => {
+					const base = 2200 + Math.random() * 2000;
+					const pattern = (["up", "down", "warble", "trill"] as const)[
+						Math.floor(Math.random() * 4)
+					];
+					chirp(base, 0.1 + Math.random() * 0.2, pattern);
+					// Sometimes double-chirp
+					if (Math.random() > 0.5) {
+						setTimeout(
+							() =>
+								chirp(
+									base * (0.9 + Math.random() * 0.2),
+									0.08 + Math.random() * 0.12,
+									"up",
+								),
+							150 + Math.random() * 200,
+						);
+					}
+				},
+				600 + Math.random() * 1500,
+			),
+		);
+
+		// Voice 2: Sparrow (short, repetitive peeps)
+		intervals.push(
+			setInterval(
+				() => {
+					const base = 3000 + Math.random() * 1500;
+					for (let j = 0; j < 2 + Math.floor(Math.random() * 3); j++) {
+						setTimeout(
+							() => chirp(base, 0.04 + Math.random() * 0.04, "up"),
+							j * (80 + Math.random() * 60),
+						);
+					}
+				},
+				1500 + Math.random() * 2500,
+			),
+		);
+
+		// Voice 3: Dove-like (low, slow coo)
+		intervals.push(
+			setInterval(
+				() => {
+					const base = 800 + Math.random() * 200;
 					const osc = ctx.createOscillator();
 					const g = ctx.createGain();
 					osc.type = "sine";
-					const base = 2000 + Math.random() * 3000;
-					osc.frequency.setValueAtTime(base, ctx.currentTime);
-					osc.frequency.exponentialRampToValueAtTime(
-						base + 500 + Math.random() * 1000,
-						ctx.currentTime + 0.04,
-					);
-					osc.frequency.exponentialRampToValueAtTime(
-						base - 300,
-						ctx.currentTime + 0.1,
-					);
-					g.gain.setValueAtTime(0, ctx.currentTime);
-					g.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 0.01);
-					g.gain.exponentialRampToValueAtTime(
-						0.001,
-						ctx.currentTime + 0.15 + Math.random() * 0.15,
-					);
+					const now = ctx.currentTime;
+					osc.frequency.setValueAtTime(base, now);
+					osc.frequency.linearRampToValueAtTime(base * 0.9, now + 0.3);
+					osc.frequency.linearRampToValueAtTime(base, now + 0.6);
+					g.gain.setValueAtTime(0, now);
+					g.gain.linearRampToValueAtTime(0.015, now + 0.05);
+					g.gain.setValueAtTime(0.015, now + 0.4);
+					g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
 					const pan = createStereoPanner(ctx);
 					pan.pan.value = Math.random() * 2 - 1;
 					osc.connect(g);
 					g.connect(pan);
 					pan.connect(dest);
-					osc.start(ctx.currentTime);
-					osc.stop(ctx.currentTime + 0.3);
+					osc.start(now);
+					osc.stop(now + 0.8);
 				},
-				800 + Math.random() * 2000 + i * 1200,
-			);
-			intervals.push(id);
-		}
+				4000 + Math.random() * 4000,
+			),
+		);
+
 		src.start();
 		this.state.set("birds", {
 			stop: () => {
@@ -1184,39 +1792,90 @@ class AudioManager {
 				intervals.forEach(clearInterval);
 			},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.1, ctx.currentTime, 0.05);
+				gain.gain.setTargetAtTime(v * 0.06, ctx.currentTime, 0.05);
 			},
 		});
 	}
 
 	// ── Waterfall ──────────────────────────────────────────
 	private startWaterfall(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 8, "pink");
-		const src = ctx.createBufferSource();
-		src.buffer = noise;
-		src.loop = true;
-		const bp = ctx.createBiquadFilter();
-		bp.type = "bandpass";
-		bp.frequency.value = 1500;
-		bp.Q.value = 0.8;
-		const hp = ctx.createBiquadFilter();
-		hp.type = "highpass";
-		hp.frequency.value = 400;
-		const gain = ctx.createGain();
-		gain.gain.value = 0.22;
-		const reverb = createReverb(ctx, 1.2, 0.3);
-		src.connect(hp);
-		hp.connect(bp);
-		bp.connect(gain);
-		gain.connect(reverb.input);
-		reverb.output.connect(dest);
-		const lfo = createLFO(ctx, 0.15, 400, bp.frequency);
-		const lfo2 = createLFO(ctx, 0.08, 0.04, gain.gain);
-		src.start();
+		// Layer 1: Powerful main rush
+		const noise1 = createNoiseBuffer(ctx, 8, "pink");
+		const src1 = ctx.createBufferSource();
+		src1.buffer = noise1;
+		src1.loop = true;
+		const bp1 = ctx.createBiquadFilter();
+		bp1.type = "bandpass";
+		bp1.frequency.value = 1200;
+		bp1.Q.value = 0.6;
+		const hp1 = ctx.createBiquadFilter();
+		hp1.type = "highpass";
+		hp1.frequency.value = 300;
+		const gain1 = ctx.createGain();
+		gain1.gain.value = 0.22;
+
+		// Layer 2: Low rumble of falling water
+		const noise2 = createNoiseBuffer(ctx, 8, "brown");
+		const src2 = ctx.createBufferSource();
+		src2.buffer = noise2;
+		src2.loop = true;
+		const lp2 = ctx.createBiquadFilter();
+		lp2.type = "lowpass";
+		lp2.frequency.value = 300;
+		const gain2 = ctx.createGain();
+		gain2.gain.value = 0.1;
+
+		// Layer 3: High spray/mist
+		const noise3 = createNoiseBuffer(ctx, 8, "white");
+		const src3 = ctx.createBufferSource();
+		src3.buffer = noise3;
+		src3.loop = true;
+		const hp3 = ctx.createBiquadFilter();
+		hp3.type = "highpass";
+		hp3.frequency.value = 4000;
+		const gain3 = ctx.createGain();
+		gain3.gain.value = 0.03;
+
+		const reverb = createReverb(ctx, 1.5, 0.35);
+		const mixGain = ctx.createGain();
+		mixGain.gain.value = 1;
+
+		src1.connect(hp1);
+		hp1.connect(bp1);
+		bp1.connect(gain1);
+		gain1.connect(reverb.input);
+
+		src2.connect(lp2);
+		lp2.connect(gain2);
+		gain2.connect(reverb.input);
+
+		src3.connect(hp3);
+		hp3.connect(gain3);
+		gain3.connect(reverb.input);
+
+		reverb.output.connect(mixGain);
+		mixGain.connect(dest);
+		// Dry for clarity
+		gain1.connect(dest);
+
+		const lfo = createLFO(ctx, 0.12, 350, bp1.frequency);
+		const lfo2 = createLFO(ctx, 0.06, 0.05, gain1.gain);
+		const lfo3 = createLFO(ctx, 0.03, 0.04, gain2.gain);
+
+		src1.start();
+		src2.start();
+		src3.start();
+
 		this.state.set("waterfall", {
 			stop: () => {
 				try {
-					src.stop();
+					src1.stop();
+				} catch {}
+				try {
+					src2.stop();
+				} catch {}
+				try {
+					src3.stop();
 				} catch {}
 				try {
 					lfo.stop();
@@ -1224,10 +1883,15 @@ class AudioManager {
 				try {
 					lfo2.stop();
 				} catch {}
+				try {
+					lfo3.stop();
+				} catch {}
 			},
 			cleanup: () => {},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.22, ctx.currentTime, 0.05);
+				gain1.gain.setTargetAtTime(v * 0.22, ctx.currentTime, 0.05);
+				gain2.gain.setTargetAtTime(v * 0.1, ctx.currentTime, 0.05);
+				gain3.gain.setTargetAtTime(v * 0.03, ctx.currentTime, 0.05);
 			},
 		});
 	}
@@ -1575,51 +2239,85 @@ class AudioManager {
 
 	// ── Rain on Roof ───────────────────────────────────────
 	private startRainOnRoof(ctx: AudioContext, dest: AudioNode) {
-		const noise = createNoiseBuffer(ctx, 6, "pink");
+		const noise = createNoiseBuffer(ctx, 8, "pink");
 		const src = ctx.createBufferSource();
 		src.buffer = noise;
 		src.loop = true;
 		const hp = ctx.createBiquadFilter();
 		hp.type = "highpass";
-		hp.frequency.value = 200;
+		hp.frequency.value = 300;
 		const bp = ctx.createBiquadFilter();
 		bp.type = "bandpass";
-		bp.frequency.value = 600;
-		bp.Q.value = 1.5;
+		bp.frequency.value = 700;
+		bp.Q.value = 1.2;
 		const gain = ctx.createGain();
-		gain.gain.value = 0.18;
-		const reverb = createReverb(ctx, 0.8, 0.2);
+		gain.gain.value = 0.15;
+		const reverb = createReverb(ctx, 0.5, 0.15);
 		src.connect(hp);
 		hp.connect(bp);
 		bp.connect(gain);
 		gain.connect(reverb.input);
 		reverb.output.connect(dest);
-		const lfo = createLFO(ctx, 0.2, 200, bp.frequency);
+		gain.connect(dest);
+		const lfo = createLFO(ctx, 0.18, 180, bp.frequency);
 
-		const thudInterval = setInterval(
+		// Impact layer: varied thuds, taps, and pings
+		const impactInterval = setInterval(
 			() => {
+				const type = Math.random();
 				const osc = ctx.createOscillator();
 				const g = ctx.createGain();
-				osc.type = "sine";
-				osc.frequency.value = 80 + Math.random() * 120;
-				g.gain.setValueAtTime(0, ctx.currentTime);
-				g.gain.linearRampToValueAtTime(
-					0.04 + Math.random() * 0.04,
-					ctx.currentTime + 0.005,
-				);
-				g.gain.exponentialRampToValueAtTime(
-					0.001,
-					ctx.currentTime + 0.04 + Math.random() * 0.06,
-				);
 				const pan = createStereoPanner(ctx);
 				pan.pan.value = Math.random() * 2 - 1;
+
+				if (type < 0.4) {
+					// Soft thud (water hitting surface)
+					osc.type = "sine";
+					osc.frequency.value = 60 + Math.random() * 100;
+					g.gain.setValueAtTime(0, ctx.currentTime);
+					g.gain.linearRampToValueAtTime(
+						0.03 + Math.random() * 0.03,
+						ctx.currentTime + 0.004,
+					);
+					g.gain.exponentialRampToValueAtTime(
+						0.001,
+						ctx.currentTime + 0.03 + Math.random() * 0.04,
+					);
+				} else if (type < 0.7) {
+					// Sharp tap
+					osc.type = "triangle";
+					osc.frequency.value = 200 + Math.random() * 400;
+					g.gain.setValueAtTime(0, ctx.currentTime);
+					g.gain.linearRampToValueAtTime(
+						0.02 + Math.random() * 0.02,
+						ctx.currentTime + 0.002,
+					);
+					g.gain.exponentialRampToValueAtTime(
+						0.001,
+						ctx.currentTime + 0.015 + Math.random() * 0.02,
+					);
+				} else {
+					// Metallic ping (tin roof)
+					osc.type = "sine";
+					osc.frequency.value = 800 + Math.random() * 1200;
+					g.gain.setValueAtTime(0, ctx.currentTime);
+					g.gain.linearRampToValueAtTime(
+						0.012 + Math.random() * 0.01,
+						ctx.currentTime + 0.001,
+					);
+					g.gain.exponentialRampToValueAtTime(
+						0.001,
+						ctx.currentTime + 0.02 + Math.random() * 0.03,
+					);
+				}
+
 				osc.connect(g);
 				g.connect(pan);
 				pan.connect(dest);
 				osc.start(ctx.currentTime);
-				osc.stop(ctx.currentTime + 0.1);
+				osc.stop(ctx.currentTime + 0.06);
 			},
-			80 + Math.random() * 120,
+			50 + Math.random() * 80,
 		);
 
 		src.start();
@@ -1630,13 +2328,13 @@ class AudioManager {
 				} catch {}
 			},
 			cleanup: () => {
-				clearInterval(thudInterval);
+				clearInterval(impactInterval);
 				try {
 					lfo.stop();
 				} catch {}
 			},
 			setVolume: (v) => {
-				gain.gain.setTargetAtTime(v * 0.18, ctx.currentTime, 0.05);
+				gain.gain.setTargetAtTime(v * 0.15, ctx.currentTime, 0.05);
 			},
 		});
 	}

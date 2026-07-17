@@ -76,6 +76,8 @@ const SOUND_LABELS: Record<AmbientSound, string> = {
 	spaceship: "Spaceship",
 	desert: "Desert",
 	rainOnRoof: "Rain on Roof",
+	signatureRain: "Signature Rain",
+	signatureDrone: "Signature Drone",
 };
 
 export function ViewSwitcher({
@@ -92,9 +94,15 @@ export function ViewSwitcher({
 	onAddZone: () => void;
 	ambientMode: boolean;
 	onToggleAmbient: () => void;
-	activePanel: "pomodoro" | "sounds" | "scrubber" | "dashboard" | null;
+	activePanel:
+		| "pomodoro"
+		| "sounds"
+		| "scrubber"
+		| "dashboard"
+		| "meeting"
+		| null;
 	onPanelChange: (
-		panel: "pomodoro" | "sounds" | "scrubber" | "dashboard" | null,
+		panel: "pomodoro" | "sounds" | "scrubber" | "dashboard" | "meeting" | null,
 	) => void;
 }) {
 	const pomoState = usePomodoroLive();

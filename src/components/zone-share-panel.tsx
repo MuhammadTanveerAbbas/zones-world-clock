@@ -1,6 +1,7 @@
 "use client";
 
 import { store } from "@/lib/store";
+import { formatZoneTimes } from "@/lib/zone-time-export";
 import { useCallback, useRef, useState } from "react";
 import { DownloadIcon } from "./icons";
 import { OverlayPanel } from "./ui/overlay-panel";
@@ -43,6 +44,31 @@ export function ZoneSharePanel({
 			setError("Could not copy to clipboard. Try exporting JSON instead.");
 		}
 	}, [showStatus]);
+
+	const handleCopyTime = useCallback(
+		async (format: "plain" | "markdown") => {
+			const state = store.getState();
+			const text = formatZoneTimes(
+				state.zones,
+				state.homeId,
+				state.zones.find((z) => z.id === state.homeId)?.tz ?? "",
+				new Date(),
+				state.use24h,
+				format,
+			);
+			try {
+				await navigator.clipboard.writeText(text);
+				showStatus(
+					format === "plain"
+						? "Time copied as plain text."
+						: "Time copied as Markdown table.",
+				);
+			} catch {
+				setError("Could not copy to clipboard.");
+			}
+		},
+		[showStatus],
+	);
 
 	const handleImport = useCallback(() => {
 		const result = store.importJson(importText);
@@ -101,6 +127,20 @@ export function ZoneSharePanel({
 							onClick={handleCopyShareLink}
 						>
 							Copy share link
+						</PixelButton>
+						<PixelButton
+							variant="outline"
+							size="sm"
+							onClick={() => handleCopyTime("plain")}
+						>
+							Copy time (text)
+						</PixelButton>
+						<PixelButton
+							variant="outline"
+							size="sm"
+							onClick={() => handleCopyTime("markdown")}
+						>
+							Copy time (MD)
 						</PixelButton>
 					</div>
 				</div>

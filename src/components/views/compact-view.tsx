@@ -2,6 +2,7 @@
 
 import type { ZoneGroup } from "@/lib/group-zones";
 import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
+import { formatDeltaHours, formatSeconds } from "@/lib/time-utils";
 import * as m from "motion/react-m";
 
 export function CompactView({
@@ -22,9 +23,7 @@ export function CompactView({
 			<div className="flex flex-col gap-1.5 sm:gap-3 w-full">
 				{groups.map((group, i) => {
 					const isHomeGroup = group.offset === 0;
-					const deltaSign = group.offset > 0 ? "+" : "";
-					const deltaStr =
-						group.offset !== 0 ? `${deltaSign}${group.offset}h` : "";
+					const deltaStr = formatDeltaHours(group.offset);
 
 					const ambientGradient =
 						ambientMode && displayTime
@@ -89,6 +88,14 @@ export function CompactView({
 								>
 									{group.timeStr}
 								</span>
+								{displayTime && (
+									<span
+										className="font-mono text-[10px] sm:text-xs font-bold tabular-nums tracking-wider text-(--color-muted-foreground)"
+										style={{ lineHeight: 1 }}
+									>
+										:{formatSeconds(displayTime, group.tz)}
+									</span>
+								)}
 								{group.period && (
 									<span className="font-mono text-[9px] sm:text-xs font-bold text-(--color-muted-foreground) tracking-wider">
 										{group.period}

@@ -1,7 +1,21 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { type ReactNode, useCallback, useEffect, useRef } from "react";
+import { useZonesStore } from "@/hooks/use-zones-store";
+import { audioManager } from "@/lib/audio-manager";
+import {
+	BACKDROP_STAGGER_MS,
+	BACKDROP_TRANSITION,
+	OVERLAY_SPRING,
+	overlayPanelVariants,
+} from "@/lib/motion-tokens";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { CloseIcon } from "../icons";
 
 interface Props {
@@ -19,6 +33,18 @@ const WIDTH_CLASSES = {
 	lg: "sm:max-w-2xl",
 };
 
+function useIsMobile() {
+	const [isMobile, setIsMobile] = useState(false);
+	useEffect(() => {
+		const mq = window.matchMedia("(max-width: 639px)");
+		setIsMobile(mq.matches);
+		const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+		mq.addEventListener("change", handler);
+		return () => mq.removeEventListener("change", handler);
+	}, []);
+	return isMobile;
+}
+
 export function OverlayPanel({
 	open,
 	onClose,
@@ -29,6 +55,10 @@ export function OverlayPanel({
 }: Props) {
 	const panelRef = useRef<HTMLDivElement>(null);
 	const prevFocusRef = useRef<HTMLElement | null>(null);
+	const reducedMotion = useReducedMotion();
+	const isMobile = useIsMobile();
+	const { soundReactiveGlow } = useZonesStore();
+	const [glowOffset, setGlowOffset] = useState(0);
 
 	useEffect(() => {
 		if (open) {
@@ -39,12 +69,34 @@ export function OverlayPanel({
 		prevFocusRef.current?.focus();
 	}, [open]);
 
+	useEffect(() => {
+		if (!open || reducedMotion || !soundReactiveGlow) return;
+		if (audioManager.activeSound === "none") return;
+		let raf: number;
+		const poll = () => {
+			const amp = audioManager.amplitude;
+			setGlowOffset(Math.round(amp * 20) / 10);
+			raf = requestAnimationFrame(poll);
+		};
+		raf = requestAnimationFrame(poll);
+		return () => cancelAnimationFrame(raf);
+	}, [open, reducedMotion, soundReactiveGlow]);
+
 	const handleKey = useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key === "Escape") onClose();
 		},
 		[onClose],
 	);
+
+	const hiddenVariant = isMobile ? "hiddenMobile" : "hiddenDesktop";
+	const exitVariant = isMobile ? "exitMobile" : "exitDesktop";
+	const shadowStyle =
+		soundReactiveGlow && !reducedMotion && audioManager.activeSound !== "none"
+			? {
+					boxShadow: `${6 + glowOffset}px ${6 + glowOffset}px 0 0 var(--pixel)`,
+				}
+			: undefined;
 
 	return (
 		<AnimatePresence>
@@ -54,7 +106,7 @@ export function OverlayPanel({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
-					transition={{ duration: 0.12 }}
+					transition={BACKDROP_TRANSITION}
 					className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/55 backdrop-blur-sm"
 					onClick={(e) => {
 						if (e.target === e.currentTarget) onClose();
@@ -67,14 +119,13 @@ export function OverlayPanel({
 						role="dialog"
 						aria-modal="true"
 						aria-label={title}
-						initial={{ y: "100%", opacity: 0 }}
-						animate={{ y: 0, opacity: 1 }}
-						exit={{ y: "100%", opacity: 0 }}
+						variants={overlayPanelVariants}
+						initial={hiddenVariant}
+						animate="visible"
+						exit={exitVariant}
 						transition={{
-							type: "spring",
-							stiffness: 500,
-							damping: 38,
-							mass: 0.85,
+							...OVERLAY_SPRING,
+							delay: reducedMotion ? 0 : BACKDROP_STAGGER_MS / 1000,
 						}}
 						className={[
 							"relative w-full",
@@ -84,7 +135,7 @@ export function OverlayPanel({
 							"max-h-[92vh] sm:max-h-[85vh] flex flex-col",
 							WIDTH_CLASSES[width],
 						].join(" ")}
-						style={{ borderRadius: 0 }}
+						style={{ borderRadius: 0, ...shadowStyle }}
 						onKeyDown={handleKey}
 					>
 						<div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-b-2 border-(--color-border) shrink-0 bg-(--color-surface)">

@@ -28,12 +28,21 @@ Zones is a clean, fast, and fully client-side world clock dashboard. It solves t
 - 🏠 **Home Timezone:** Mark any zone as your reference point
 - 🖱 **Drag to Reorder:** Reorder zones in Scroll view via drag-and-drop
 - 🕐 **12h / 24h Toggle:** Switch time formats globally
-- 🎨 **Dark / Light / System Theme:** Persisted across sessions
+- 🎨 **Dark / Light / Terminal Theme:** Persisted across sessions with a CRT phosphor theme
 - 📱 **Fully Responsive:** Works on mobile, tablet, and desktop
 - 📳 **Haptic Feedback:** Web Haptics API on supported devices
 - 💾 **Export & Import:** Download, share, or import your timezone set via JSON or link
 - 💾 **Persistent State:** All preferences saved to localStorage
 - 📲 **Installable PWA:** Add to your home screen for quick access
+- ⏰ **Live Seconds:** Ticking seconds on every zone card with tabular-nums monospace display
+- 🌍 **DST Indicators:** See when daylight saving transitions are approaching
+- 📋 **Copy Time Export:** One-click copy formatted time for all zones (plain text or Markdown)
+- 🤝 **Meeting Time Finder:** Find the best overlapping working-hours window across zones
+- 📊 **Business Hours Heatmap:** Visual per-zone 24h strip showing core/edge/off hours
+- 🌎 **NASA EPIC Earth View:** Optional live Earth backdrop from NASA's DSCOVR satellite
+- 🌗 **Day/Night Terminator:** Solar position glyphs showing day/night per zone
+- 🎵 **21 Ambient Sounds:** Synthesized in real-time via Web Audio API + 2 recorded CC0 tracks
+- 🔊 **Sound-Reactive Glow:** Overlays pulse subtly with ambient sound amplitude
 
 ## 🛠 Tech Stack
 
@@ -76,6 +85,10 @@ npm run dev
 ## 🔐 Environment Variables
 
 No environment variables are required. This is a fully client-side application with no backend dependencies.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NEXT_PUBLIC_NASA_API_KEY` | `DEMO_KEY` | NASA API key for EPIC Earth images. `DEMO_KEY` works out of the box with rate limits. Get a free key at [api.nasa.gov](https://api.nasa.gov) for higher limits. |
 
 ## 📁 Project Structure
 
@@ -149,11 +162,22 @@ This project is deployed on **Vercel**.
 - [x] Ambient time-of-day gradients
 - [x] Full IANA timezone search
 - [x] Drag-to-reorder zones
-- [x] Dark / Light / System theme
+- [x] Dark / Light / Terminal theme
 - [x] Haptic feedback support
 - [x] Keyboard shortcuts
 - [x] PWA / installable app
 - [x] Export / share timezone sets
+- [x] Live seconds with tabular-nums
+- [x] Fractional timezone offsets (India +5:30, Nepal +5:45, etc.)
+- [x] DST transition indicators
+- [x] Terminal / CRT phosphor theme with scanlines
+- [x] Meeting time finder with overlap calculation
+- [x] Business hours heatmap per zone
+- [x] NASA EPIC Earth backdrop
+- [x] Day/night terminator glyphs
+- [x] 21 synthesized ambient sounds + 2 recorded tracks
+- [x] Sound-reactive overlay glow
+- [x] Copy-formatted time export (plain text & Markdown)
 
 ## 🤝 Contributing
 

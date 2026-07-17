@@ -11,12 +11,21 @@ import { DEFAULT_ZONES, type Zone } from "./zones";
 
 export type ViewMode = "stack" | "scroll" | "grid" | "compact";
 
+export type WorkingHoursConfig = {
+	start: number;
+	end: number;
+};
+
 export type ZonesState = {
 	zones: Zone[];
 	homeId: string;
 	viewMode: ViewMode;
 	use24h: boolean;
 	ambientMode: boolean;
+	scanlinesEnabled: boolean;
+	soundReactiveGlow: boolean;
+	earthBackdrop: boolean;
+	workingHours: WorkingHoursConfig;
 	version?: number;
 };
 
@@ -29,6 +38,10 @@ const DEFAULT_STATE: ZonesState = {
 	viewMode: "stack",
 	use24h: false,
 	ambientMode: true,
+	scanlinesEnabled: false,
+	soundReactiveGlow: true,
+	earthBackdrop: false,
+	workingHours: { start: 9, end: 18 },
 	version: CURRENT_VERSION,
 };
 

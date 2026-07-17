@@ -1,13 +1,8 @@
 "use client";
 
+import { DstIcon } from "@/components/icons";
 import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
-import {
-	formatPeriod,
-	formatTime,
-	getDayDelta,
-	getDeltaHours,
-	getZonedTime,
-} from "@/lib/time-utils";
+import { getTimezoneAbbreviation, getZoneTimeInfo } from "@/lib/time-utils";
 import type { Zone } from "@/lib/zones";
 import * as m from "motion/react-m";
 import { useMemo } from "react";
@@ -44,16 +39,16 @@ export function GridView({
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
 				{sorted.map((zone, i) => {
 					const isHome = zone.id === homeId;
-					const delta = isHome
-						? 0
-						: getDeltaHours(homeTz, zone.tz, displayTime);
-					const homeZoned = getZonedTime(displayTime, homeTz);
-					const targetZoned = getZonedTime(displayTime, zone.tz);
-					const dayDelta = isHome ? 0 : getDayDelta(homeZoned, targetZoned);
-					const timeStr = formatTime(displayTime, zone.tz, use24h);
-					const period = use24h ? "" : formatPeriod(displayTime, zone.tz);
-					const deltaSign = delta > 0 ? "+" : "";
-					const deltaStr = delta !== 0 ? `${deltaSign}${delta}h` : "";
+					const {
+						delta,
+						deltaStr,
+						timeStr,
+						secondsStr,
+						period,
+						dayDelta,
+						dstTransition,
+					} = getZoneTimeInfo(zone, homeId, homeTz, displayTime, use24h);
+					const abbrev = getTimezoneAbbreviation(zone.tz, displayTime);
 					const ambientGradient = ambientMode
 						? getAmbientInlineGradient(
 								getTimeOfDay(displayTime, zone.tz),
@@ -109,12 +104,24 @@ export function GridView({
 								/>
 								<div className="min-w-0 flex flex-col">
 									<div className="font-mono text-base sm:text-xl md:text-2xl font-bold text-(--color-foreground) truncate tracking-wider uppercase leading-none">
+										{isHome && <span className="home-prompt" />}
 										{zone.label}
 									</div>
 									<div className="flex items-center gap-1.5 sm:gap-2">
 										<span className="font-mono text-[9px] sm:text-xs text-(--color-muted-foreground) truncate uppercase tracking-widest">
 											{zone.sublabel}
 										</span>
+										{abbrev && (
+											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
+												{abbrev}
+											</span>
+										)}
+										{dstTransition && (
+											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-amber-500 flex items-center gap-0.5">
+												<DstIcon size={10} />
+												{dstTransition.label}
+											</span>
+										)}
 										{isHome && (
 											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
 												Home
@@ -136,7 +143,7 @@ export function GridView({
 							</div>
 							<div className="flex items-baseline gap-1 sm:gap-1.5">
 								<div
-									className="font-mono font-bold tabular-nums tracking-wider"
+									className={`font-mono font-bold tabular-nums tracking-wider ${isHome ? "phosphor-time" : ""}`}
 									style={{
 										fontSize: isHome
 											? "clamp(32px, 6vw, 80px)"
@@ -146,6 +153,17 @@ export function GridView({
 								>
 									{timeStr}
 								</div>
+								<span
+									className="font-mono font-bold tabular-nums tracking-wider text-(--color-muted-foreground)"
+									style={{
+										fontSize: isHome
+											? "clamp(14px, 2.5vw, 28px)"
+											: "clamp(12px, 2vw, 22px)",
+										lineHeight: 1,
+									}}
+								>
+									:{secondsStr}
+								</span>
 								{period && (
 									<span
 										className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"

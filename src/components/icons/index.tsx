@@ -711,6 +711,25 @@ export function DashboardIcon(props: IconProps) {
 	);
 }
 
+export function TerminalIcon(props: IconProps) {
+	return (
+		<svg {...base(props)}>
+			<rect
+				x="2"
+				y="2"
+				width="12"
+				height="12"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1"
+			/>
+			<rect x="4" y="5" width="2" height="1" />
+			<rect x="5" y="6" width="1" height="1" />
+			<rect x="4" y="7" width="5" height="1" />
+		</svg>
+	);
+}
+
 export function DstIcon(props: IconProps) {
 	return (
 		<svg {...base(props)} fill="none" stroke="currentColor" strokeWidth="1.2">

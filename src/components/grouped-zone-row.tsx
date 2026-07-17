@@ -1,7 +1,13 @@
 "use client";
 
+import { DstIcon } from "@/components/icons";
 import type { ZoneGroup } from "@/lib/group-zones";
 import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
+import {
+	formatDeltaHours,
+	formatSeconds,
+	getDSTTransitionInfo,
+} from "@/lib/time-utils";
 import * as m from "motion/react-m";
 
 export function GroupedZoneRow({
@@ -18,8 +24,7 @@ export function GroupedZoneRow({
 	displayTime?: Date;
 }) {
 	const isHomeGroup = group.offset === 0;
-	const deltaSign = group.offset > 0 ? "+" : "";
-	const deltaStr = group.offset !== 0 ? `${deltaSign}${group.offset}h` : "";
+	const deltaStr = formatDeltaHours(group.offset);
 
 	const ambientGradient =
 		ambientMode && displayTime
@@ -32,6 +37,10 @@ export function GroupedZoneRow({
 
 	const cityNames = group.zones.map((z) => z.label).join(", ");
 	const sublabels = group.zones.map((z) => z.sublabel).join(" / ");
+	const secondsStr = displayTime ? formatSeconds(displayTime, group.tz) : "";
+	const dstTransition = displayTime
+		? getDSTTransitionInfo(group.tz, displayTime)
+		: null;
 
 	return (
 		<m.div
@@ -63,6 +72,7 @@ export function GroupedZoneRow({
 							className="font-mono font-bold text-(--color-foreground) tracking-wider uppercase leading-none truncate"
 							style={{ fontSize: "clamp(13px, 2.2vw, 22px)" }}
 						>
+							{isHomeGroup && <span className="home-prompt" />}
 							{cityNames}
 						</span>
 						{isHomeGroup && (
@@ -77,6 +87,25 @@ export function GroupedZoneRow({
 					>
 						{sublabels}
 					</span>
+					<div className="flex items-center gap-1.5 mt-0.5">
+						{group.abbreviation && (
+							<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
+								{group.abbreviation}
+							</span>
+						)}
+						{group.dst && (
+							<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-amber-500 flex items-center gap-0.5">
+								<DstIcon size={10} />
+								DST
+							</span>
+						)}
+						{dstTransition && (
+							<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-amber-500 flex items-center gap-0.5">
+								<DstIcon size={10} />
+								{dstTransition.label}
+							</span>
+						)}
+					</div>
 				</div>
 			</div>
 
@@ -107,11 +136,19 @@ export function GroupedZoneRow({
 					<span
 						className={`font-mono font-bold tabular-nums tracking-wider transition-opacity ${
 							isScrubbing && !isHomeGroup ? "opacity-70" : ""
-						}`}
+						} ${isHomeGroup ? "phosphor-time" : ""}`}
 						style={{ fontSize: "clamp(22px, 4vw, 42px)", lineHeight: 1 }}
 					>
 						{group.timeStr}
 					</span>
+					{secondsStr && (
+						<span
+							className="font-mono font-bold tabular-nums tracking-wider text-(--color-muted-foreground)"
+							style={{ fontSize: "clamp(10px, 1.5vw, 16px)", lineHeight: 1 }}
+						>
+							:{secondsStr}
+						</span>
+					)}
 					{group.period && (
 						<span
 							className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"

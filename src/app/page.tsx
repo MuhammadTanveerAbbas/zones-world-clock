@@ -50,6 +50,13 @@ const TimeScrubber = dynamic(
 		})),
 	{ ssr: false },
 );
+const MeetingFinder = dynamic(
+	() =>
+		import("@/components/meeting-finder").then((m) => ({
+			default: m.MeetingFinder,
+		})),
+	{ ssr: false },
+);
 const ZoneSharePanel = dynamic(
 	() =>
 		import("@/components/zone-share-panel").then((m) => ({
@@ -81,10 +88,11 @@ export default function Home() {
 		setHomeId,
 		ambientMode,
 		toggleAmbientMode,
+		workingHours,
 	} = useZonesStore();
 
 	const [activePanel, setActivePanel] = useState<
-		"pomodoro" | "sounds" | "scrubber" | "dashboard" | null
+		"pomodoro" | "sounds" | "scrubber" | "dashboard" | "meeting" | null
 	>(null);
 	const [showSearch, setShowSearch] = useState(false);
 	const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -111,6 +119,9 @@ export default function Home() {
 			fn: () => setActivePanel((p) => (p === "pomodoro" ? null : "pomodoro")),
 		},
 		s: { fn: () => setActivePanel((p) => (p === "sounds" ? null : "sounds")) },
+		m: {
+			fn: () => setActivePanel((p) => (p === "meeting" ? null : "meeting")),
+		},
 		"1": { fn: () => setViewMode("stack") },
 		"2": { fn: () => setViewMode("scroll") },
 		"3": { fn: () => setViewMode("grid") },
@@ -257,6 +268,17 @@ export default function Home() {
 					isScrubbing={isScrubbing}
 					use24h={use24h}
 					toggleTimeFormat={toggleTimeFormat}
+				/>
+			</ErrorBoundary>
+			<ErrorBoundary>
+				<MeetingFinder
+					open={activePanel === "meeting"}
+					onClose={closePanel}
+					zones={zones}
+					homeTz={homeTz}
+					referenceDate={displayTime}
+					use24h={use24h}
+					workingHours={workingHours}
 				/>
 			</ErrorBoundary>
 
