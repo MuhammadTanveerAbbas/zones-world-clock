@@ -100,7 +100,7 @@ export function ScrollView({
 											</div>
 											<div className="flex items-baseline gap-0.5 sm:gap-1 shrink-0">
 												<div
-													className={`font-mono font-bold tabular-nums tracking-wider ${isHome ? "phosphor-time" : ""}`}
+													className="font-mono font-bold tabular-nums tracking-wider"
 													style={{
 														fontSize: "clamp(20px, 5vw, 72px)",
 														lineHeight: 1,

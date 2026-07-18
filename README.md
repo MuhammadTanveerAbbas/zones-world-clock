@@ -28,7 +28,7 @@ Zones is a clean, fast, and fully client-side world clock dashboard. It solves t
 - 🏠 **Home Timezone:** Mark any zone as your reference point
 - 🖱 **Drag to Reorder:** Reorder zones in Scroll view via drag-and-drop
 - 🕐 **12h / 24h Toggle:** Switch time formats globally
-- 🎨 **Dark / Light / Terminal Theme:** Persisted across sessions with a CRT phosphor theme
+- 🎨 **Dark / Light Theme:** Persisted across sessions
 - 📱 **Fully Responsive:** Works on mobile, tablet, and desktop
 - 📳 **Haptic Feedback:** Web Haptics API on supported devices
 - 💾 **Export & Import:** Download, share, or import your timezone set via JSON or link
@@ -162,7 +162,7 @@ This project is deployed on **Vercel**.
 - [x] Ambient time-of-day gradients
 - [x] Full IANA timezone search
 - [x] Drag-to-reorder zones
-- [x] Dark / Light / Terminal theme
+- [x] Dark / Light theme
 - [x] Haptic feedback support
 - [x] Keyboard shortcuts
 - [x] PWA / installable app
@@ -170,7 +170,6 @@ This project is deployed on **Vercel**.
 - [x] Live seconds with tabular-nums
 - [x] Fractional timezone offsets (India +5:30, Nepal +5:45, etc.)
 - [x] DST transition indicators
-- [x] Terminal / CRT phosphor theme with scanlines
 - [x] Meeting time finder with overlap calculation
 - [x] Business hours heatmap per zone
 - [x] NASA EPIC Earth backdrop

@@ -37,13 +37,6 @@ export function useZonesStore() {
 		() => store.setState({ ambientMode: !store.getState().ambientMode }),
 		[],
 	);
-	const toggleScanlines = useCallback(
-		() =>
-			store.setState({
-				scanlinesEnabled: !store.getState().scanlinesEnabled,
-			}),
-		[],
-	);
 	const toggleSoundReactiveGlow = useCallback(
 		() =>
 			store.setState({
@@ -84,7 +77,6 @@ export function useZonesStore() {
 		removeZone,
 		reorderZones,
 		toggleAmbientMode,
-		toggleScanlines,
 		toggleSoundReactiveGlow,
 		toggleEarthBackdrop,
 		setWorkingHours,

@@ -1,7 +1,6 @@
 "use client";
 
 import { useClickSound } from "@/hooks/use-click-sound";
-import { useZonesStore } from "@/hooks/use-zones-store";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -10,23 +9,20 @@ import {
 	SparkleOffIcon,
 	SunIcon,
 	SystemIcon,
-	TerminalIcon,
 } from "./icons";
-import { PixelBadge, PixelButton } from "./ui/pixel-button";
+import { PixelButton } from "./ui/pixel-button";
 
-type ThemeValue = "light" | "dark" | "system" | "terminal";
+type ThemeValue = "light" | "dark" | "system";
 
 const THEMES: { value: ThemeValue; label: string; icon: React.ReactNode }[] = [
 	{ value: "light", label: "Light", icon: <SunIcon size={12} /> },
 	{ value: "dark", label: "Dark", icon: <MoonIcon size={12} /> },
-	{ value: "terminal", label: "CRT", icon: <TerminalIcon size={12} /> },
 	{ value: "system", label: "System", icon: <SystemIcon size={12} /> },
 ];
 
 function IconForTheme(theme: string | undefined) {
 	if (theme === "light") return <SunIcon size={14} />;
 	if (theme === "dark") return <MoonIcon size={14} />;
-	if (theme === "terminal") return <TerminalIcon size={14} />;
 	return <SystemIcon size={14} />;
 }
 
@@ -38,7 +34,6 @@ export function ThemeSwitcher({
 	onToggleAmbient: () => void;
 }) {
 	const { theme, setTheme } = useTheme();
-	const { scanlinesEnabled, toggleScanlines } = useZonesStore();
 	const playClick = useClickSound();
 	const [mounted, setMounted] = useState(false);
 	const [open, setOpen] = useState(false);
@@ -137,7 +132,7 @@ export function ThemeSwitcher({
 							}}
 							className={[
 								"flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest px-3 py-2 cursor-pointer text-left w-full",
-								"transition-colors duration-75 border-b-2 border-(--color-border-subtle)",
+								"transition-colors duration-75",
 								ambientMode
 									? "bg-(--color-foreground) text-(--color-background)"
 									: "text-(--color-muted-foreground) hover:bg-(--color-foreground)/5 hover:text-(--color-foreground)",
@@ -149,26 +144,6 @@ export function ThemeSwitcher({
 								<SparkleOffIcon size={12} />
 							)}
 							Ambient
-						</button>
-						<button
-							type="button"
-							role="menuitem"
-							aria-pressed={scanlinesEnabled}
-							onClick={() => {
-								toggleScanlines();
-								playClick();
-								setOpen(false);
-							}}
-							className={[
-								"flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest px-3 py-2 cursor-pointer text-left w-full",
-								"transition-colors duration-75",
-								scanlinesEnabled
-									? "bg-(--color-foreground) text-(--color-background)"
-									: "text-(--color-muted-foreground) hover:bg-(--color-foreground)/5 hover:text-(--color-foreground)",
-							].join(" ")}
-						>
-							<TerminalIcon size={12} />
-							Scanlines
 						</button>
 					</div>
 				)}

@@ -136,7 +136,7 @@ export function GroupedZoneRow({
 					<span
 						className={`font-mono font-bold tabular-nums tracking-wider transition-opacity ${
 							isScrubbing && !isHomeGroup ? "opacity-70" : ""
-						} ${isHomeGroup ? "phosphor-time" : ""}`}
+						}`}
 						style={{ fontSize: "clamp(22px, 4vw, 42px)", lineHeight: 1 }}
 					>
 						{group.timeStr}

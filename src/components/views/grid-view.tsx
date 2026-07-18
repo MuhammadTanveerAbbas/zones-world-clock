@@ -143,7 +143,7 @@ export function GridView({
 							</div>
 							<div className="flex items-baseline gap-1 sm:gap-1.5">
 								<div
-									className={`font-mono font-bold tabular-nums tracking-wider ${isHome ? "phosphor-time" : ""}`}
+									className="font-mono font-bold tabular-nums tracking-wider"
 									style={{
 										fontSize: isHome
 											? "clamp(32px, 6vw, 80px)"
