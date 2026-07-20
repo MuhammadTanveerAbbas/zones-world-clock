@@ -2,8 +2,8 @@
 
 import { CommandPalette } from "@/components/command-palette";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Footer } from "@/components/footer";
 import { GlobeIcon } from "@/components/icons";
-import { SiteFooter } from "@/components/site-footer";
 import { ViewSwitcher } from "@/components/view-switcher";
 import { CompactView } from "@/components/views/compact-view";
 import { GridView } from "@/components/views/grid-view";
@@ -249,8 +249,9 @@ export default function Home() {
 						</ErrorBoundary>
 					</main>
 				</LazyMotion>
-				<SiteFooter />
 			</div>
+
+			<Footer />
 
 			<ErrorBoundary>
 				<PomodoroTimer open={activePanel === "pomodoro"} onClose={closePanel} />

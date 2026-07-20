@@ -588,15 +588,7 @@ export function XIcon(props: IconProps) {
 export function LinkedInIcon(props: IconProps) {
 	return (
 		<svg {...base(props)} viewBox="0 0 24 24">
-			<rect
-				x="3"
-				y="3"
-				width="18"
-				height="18"
-				rx="2"
-				strokeWidth="2"
-				fill="none"
-			/>
+			<rect x="3" y="3" width="18" height="18" rx="2" />
 			<line x1="8" y1="11" x2="8" y2="17" />
 			<line x1="8" y1="8" x2="8" y2="8.01" strokeWidth="3" />
 			<line x1="12" y1="17" x2="12" y2="11" />
@@ -611,11 +603,13 @@ export function LinkedInIcon(props: IconProps) {
 export function GitHubIcon(props: IconProps) {
 	return (
 		<svg {...base(props)} viewBox="0 0 24 24">
+			<circle cx="12" cy="12" r="10" fill="none" />
 			<path
-				d="M12 2 C6.477 2 2 6.477 2 12 C2 16.42 4.87 20.17 8.84 21.5 C9.34 21.58 9.5 21.27 9.5 21 C9.5 20.77 9.5 20.14 9.5 19.31 C6.73 19.91 6.14 17.97 6.14 17.97 C5.68 16.81 5.03 16.5 5.03 16.5 C4.12 15.88 5.1 15.9 5.1 15.9 C6.1 15.97 6.63 16.93 6.63 16.93 C7.5 18.45 8.97 18 9.54 17.76 C9.63 17.11 9.89 16.67 10.17 16.42 C7.95 16.17 5.62 15.31 5.62 11.5 C5.62 10.39 6 9.5 6.65 8.79 C6.55 8.54 6.2 7.5 6.75 6.15 C6.75 6.15 7.59 5.88 9.5 7.17 C10.29 6.95 11.15 6.84 12 6.84 C12.85 6.84 13.71 6.95 14.5 7.17 C16.41 5.88 17.25 6.15 17.25 6.15 C17.8 7.5 17.45 8.54 17.35 8.79 C18 9.5 18.38 10.39 18.38 11.5 C18.38 15.32 16.04 16.16 13.81 16.41 C14.17 16.72 14.5 17.33 14.5 18.26 C14.5 19.6 14.5 20.68 14.5 21 C14.5 21.27 14.66 21.59 15.17 21.5 C19.14 20.16 22 16.42 22 12 C22 6.477 17.523 2 12 2 Z"
-				fill="currentColor"
-				stroke="none"
+				d="M8 17 C6 15 6 12 6 12 C6 9 8 8 8 8 C7 7 7 5.5 8 4 C8 4 10 4 12 6 C14 4 16 4 16 4 C17 5.5 17 7 16 8 C16 8 18 9 18 12 C18 12 18 15 16 17"
+				fill="none"
 			/>
+			<circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none" />
+			<circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none" />
 		</svg>
 	);
 }
