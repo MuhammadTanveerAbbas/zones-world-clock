@@ -1,0 +1,122 @@
+import type { SVGProps } from "react";
+
+type LogoProps = SVGProps<SVGSVGElement> & {
+	size?: number;
+};
+
+export function Logo({ size = 24, ...props }: LogoProps) {
+	return (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 128 128"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			aria-hidden="true"
+			{...props}
+		>
+			<circle cx="64" cy="64" r="50" stroke="currentColor" strokeWidth="2" />
+			<ellipse
+				cx="64"
+				cy="64"
+				rx="50"
+				ry="20"
+				stroke="currentColor"
+				strokeWidth="1.5"
+				opacity="0.5"
+			/>
+			<ellipse
+				cx="64"
+				cy="64"
+				rx="20"
+				ry="50"
+				stroke="currentColor"
+				strokeWidth="1.5"
+				opacity="0.5"
+			/>
+			<ellipse
+				cx="64"
+				cy="64"
+				rx="50"
+				ry="12"
+				stroke="currentColor"
+				strokeWidth="1"
+				opacity="0.25"
+			/>
+			<ellipse
+				cx="64"
+				cy="64"
+				rx="12"
+				ry="50"
+				stroke="currentColor"
+				strokeWidth="1"
+				opacity="0.25"
+			/>
+			<circle cx="64" cy="64" r="28" fill="currentColor" />
+			<circle
+				cx="64"
+				cy="64"
+				r="26"
+				stroke="currentColor"
+				strokeWidth="0.5"
+				opacity="0.3"
+			/>
+			<line
+				x1="64"
+				y1="37"
+				x2="64"
+				y2="41"
+				stroke="currentColor"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="64"
+				y1="87"
+				x2="64"
+				y2="83"
+				stroke="currentColor"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="37"
+				y1="64"
+				x2="41"
+				y2="64"
+				stroke="currentColor"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="87"
+				y1="64"
+				x2="83"
+				y2="64"
+				stroke="currentColor"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="64"
+				y1="64"
+				x2="64"
+				y2="46"
+				stroke="currentColor"
+				strokeWidth="3"
+				strokeLinecap="round"
+				opacity="0.3"
+			/>
+			<line
+				x1="64"
+				y1="64"
+				x2="78"
+				y2="64"
+				stroke="currentColor"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+				opacity="0.3"
+			/>
+		</svg>
+	);
+}

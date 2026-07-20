@@ -165,7 +165,7 @@ export function PomodoroTimer({
 							strokeLinecap="square"
 							strokeDasharray={circumference}
 							strokeDashoffset={offset}
-							style={{ transition: "stroke-dashoffset 0.25s steps(8, end)" }}
+							style={{ transition: "stroke-dashoffset 0.25s ease" }}
 						/>
 					</svg>
 					<div className="absolute flex flex-col items-center">
@@ -238,7 +238,7 @@ export function PomodoroTimer({
 				</div>
 
 				{completedSessions > 0 && (
-					<div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-(--color-muted-foreground)">
+					<div className="flex items-center gap-1.5 font-sans font-semibold text-[9px] uppercase tracking-wide text-(--color-muted-foreground)">
 						<PixelBadge variant="success">{completedSessions}</PixelBadge>
 						<span>Sessions completed</span>
 					</div>
@@ -247,14 +247,14 @@ export function PomodoroTimer({
 				<button
 					type="button"
 					onClick={() => setShowSettings(!showSettings)}
-					className="font-mono text-[9px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors duration-75 cursor-pointer flex items-center gap-1.5"
+					className="font-sans font-semibold text-[9px] uppercase tracking-wide text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors duration-100 cursor-pointer flex items-center gap-1.5"
 				>
 					<SettingsIcon size={10} />
 					{showSettings ? "hide settings" : "settings"}
 				</button>
 
 				{showSettings && (
-					<div className="w-full space-y-2 sm:space-y-3 p-3 border-2 border-(--color-border) bg-(--color-surface)">
+					<div className="w-full space-y-2 sm:space-y-3 p-3 border-[3px] border-(--color-border) bg-(--color-surface)">
 						<div className="grid grid-cols-2 gap-2 sm:gap-3">
 							{[
 								{
@@ -279,7 +279,7 @@ export function PomodoroTimer({
 								},
 							].map(({ key, label, value }) => (
 								<div key={key} className="flex flex-col gap-0.5">
-									<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
+									<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground)">
 										{label}
 									</span>
 									<div className="flex items-center gap-1.5">
@@ -335,7 +335,7 @@ function SettingToggle({
 }) {
 	return (
 		<div className="flex items-center justify-between">
-			<span className="font-mono text-[9px] uppercase tracking-widest text-(--color-muted-foreground)">
+			<span className="font-sans font-semibold text-[9px] uppercase tracking-wide text-(--color-muted-foreground)">
 				{label}
 			</span>
 			<button
@@ -344,7 +344,7 @@ function SettingToggle({
 				aria-checked={checked}
 				onClick={() => onChange(!checked)}
 				className={[
-					"relative w-9 h-4 border-2 transition-colors duration-75 cursor-pointer",
+					"relative w-9 h-4 border-[2.5px] transition-colors duration-100 cursor-pointer",
 					checked
 						? "border-(--color-foreground) bg-(--color-foreground)"
 						: "border-(--color-border) bg-transparent",

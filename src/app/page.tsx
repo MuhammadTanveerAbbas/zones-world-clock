@@ -154,7 +154,7 @@ export default function Home() {
 	);
 
 	return (
-		<div className="flex flex-col" style={{ height: "100dvh" }}>
+		<div className="flex flex-col h-dvh">
 			<ViewSwitcher
 				current={viewMode}
 				onChange={setViewMode}
@@ -164,90 +164,93 @@ export default function Home() {
 				activePanel={activePanel}
 				onPanelChange={setActivePanel}
 			/>
-			<LazyMotion features={domAnimation}>
-				<main className="flex-1 flex flex-col min-h-0">
-					<ErrorBoundary>
-						<AnimatePresence mode="wait">
-							{zones.length === 0 ? (
-								<motion.div
-									key="empty"
-									initial={{ opacity: 0, y: 8 }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: -8 }}
-									transition={{ duration: 0.2 }}
-									className="flex-1 flex flex-col items-center justify-center p-8 text-(--color-muted-foreground) font-mono text-[10px] uppercase tracking-widest gap-3"
-								>
-									<GlobeIcon size={32} className="text-(--color-muted)" />
-									<span>No time zones yet</span>
-									<button
-										type="button"
-										onClick={() => setShowSearch(true)}
-										className="font-mono text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-lg border border-(--color-accent) text-(--color-accent) hover:bg-(--color-accent) hover:text-white transition-all duration-200 cursor-pointer"
+			<div className="flex-1 min-h-0 overflow-y-auto">
+				<LazyMotion features={domAnimation}>
+					<main className="flex flex-col">
+						<ErrorBoundary>
+							<AnimatePresence mode="wait">
+								{zones.length === 0 ? (
+									<motion.div
+										key="empty"
+										initial={{ opacity: 0, y: 8 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -8 }}
+										transition={{ duration: 0.2 }}
+										className="flex-1 flex flex-col items-center justify-center p-8 text-(--color-muted-foreground) font-sans text-[10px] uppercase tracking-wide gap-3 min-h-[50vh]"
 									>
-										Add a time zone
-									</button>
-								</motion.div>
-							) : (
-								<motion.div
-									key={viewMode}
-									initial={{ opacity: 0, x: 12 }}
-									animate={{ opacity: 1, x: 0 }}
-									exit={{ opacity: 0, x: -12 }}
-									transition={{ duration: 0.15 }}
-									className="flex-1 flex flex-col min-h-0"
-								>
-									{viewMode === "stack" && (
-										<StackView
-											groups={groups}
-											homeId={homeId}
-											isScrubbing={isScrubbing}
-											ambientMode={ambientMode}
-											displayTime={displayTime}
-											homeTz={homeTz}
-										/>
-									)}
-									{viewMode === "scroll" && (
-										<ScrollView
-											zones={zones}
-											homeId={homeId}
-											homeTz={homeTz}
-											displayTime={displayTime}
-											isScrubbing={isScrubbing}
-											use24h={use24h}
-											onRemove={removeZone}
-											onSetHome={setHomeId}
-											onReorder={reorderZones}
-											ambientMode={ambientMode}
-										/>
-									)}
-									{viewMode === "grid" && (
-										<GridView
-											zones={zones}
-											homeId={homeId}
-											homeTz={homeTz}
-											displayTime={displayTime}
-											isScrubbing={isScrubbing}
-											use24h={use24h}
-											onRemove={removeZone}
-											onSetHome={setHomeId}
-											ambientMode={ambientMode}
-										/>
-									)}
-									{viewMode === "compact" && (
-										<CompactView
-											groups={groups}
-											homeId={homeId}
-											isScrubbing={isScrubbing}
-											ambientMode={ambientMode}
-											displayTime={displayTime}
-										/>
-									)}
-								</motion.div>
-							)}
-						</AnimatePresence>
-					</ErrorBoundary>
-				</main>
-			</LazyMotion>
+										<GlobeIcon size={32} className="text-(--color-muted)" />
+										<span>No time zones yet</span>
+										<button
+											type="button"
+											onClick={() => setShowSearch(true)}
+											className="neo-btn font-sans font-semibold text-[9px] uppercase tracking-wide px-3 py-1.5 border-[3px] border-(--color-accent) text-(--color-accent) hover:bg-(--color-accent) hover:text-white transition-all duration-100 cursor-pointer"
+										>
+											Add a time zone
+										</button>
+									</motion.div>
+								) : (
+									<motion.div
+										key={viewMode}
+										initial={{ opacity: 0, x: 12 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: -12 }}
+										transition={{ duration: 0.15 }}
+										className="flex flex-col"
+									>
+										{viewMode === "stack" && (
+											<StackView
+												groups={groups}
+												homeId={homeId}
+												isScrubbing={isScrubbing}
+												ambientMode={ambientMode}
+												displayTime={displayTime}
+												homeTz={homeTz}
+											/>
+										)}
+										{viewMode === "scroll" && (
+											<ScrollView
+												zones={zones}
+												homeId={homeId}
+												homeTz={homeTz}
+												displayTime={displayTime}
+												isScrubbing={isScrubbing}
+												use24h={use24h}
+												onRemove={removeZone}
+												onSetHome={setHomeId}
+												onReorder={reorderZones}
+												ambientMode={ambientMode}
+											/>
+										)}
+										{viewMode === "grid" && (
+											<GridView
+												zones={zones}
+												homeId={homeId}
+												homeTz={homeTz}
+												displayTime={displayTime}
+												isScrubbing={isScrubbing}
+												use24h={use24h}
+												onRemove={removeZone}
+												onSetHome={setHomeId}
+												ambientMode={ambientMode}
+											/>
+										)}
+										{viewMode === "compact" && (
+											<CompactView
+												groups={groups}
+												homeId={homeId}
+												isScrubbing={isScrubbing}
+												ambientMode={ambientMode}
+												displayTime={displayTime}
+											/>
+										)}
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</ErrorBoundary>
+					</main>
+				</LazyMotion>
+				<SiteFooter />
+			</div>
 
 			<ErrorBoundary>
 				<PomodoroTimer open={activePanel === "pomodoro"} onClose={closePanel} />
@@ -296,7 +299,6 @@ export default function Home() {
 					existingIds={existingIds}
 				/>
 			)}
-			<SiteFooter />
 			<CommandPalette
 				open={showCommandPalette}
 				onClose={() => setShowCommandPalette(false)}

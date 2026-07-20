@@ -158,7 +158,7 @@ export function TimeScrubber({
 					</PixelButton>
 					<span
 						className={[
-							"absolute left-1/2 -translate-x-1/2 font-mono tracking-widest uppercase",
+							"absolute left-1/2 -translate-x-1/2 font-mono tracking-wider uppercase",
 							"text-(--color-foreground) tabular-nums",
 							isScrubbing ? "text-base sm:text-lg" : "text-sm sm:text-base",
 						].join(" ")}
@@ -242,8 +242,7 @@ export function TimeScrubber({
 											width: "1px",
 											height: `${height}px`,
 											background: `color-mix(in srgb, var(--fg) ${Math.round(opacity * 100)}%, transparent)`,
-											transition:
-												"height 0.18s steps(4, end), background 0.12s steps(2, end)",
+											transition: "height 0.18s ease, background 0.12s ease",
 										}}
 									/>
 								</div>
@@ -266,7 +265,7 @@ export function TimeScrubber({
 					</div>
 				</div>
 
-				<div className="mt-3 sm:mt-4 flex items-center justify-center gap-3 font-mono text-[8px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground)">
+				<div className="mt-3 sm:mt-4 flex items-center justify-center gap-3 font-sans font-semibold text-[8px] sm:text-[9px] uppercase tracking-wide text-(--color-muted-foreground)">
 					<span>-12H</span>
 					<div className="flex-1 h-px bg-(--color-border)" />
 					<span>NOW</span>

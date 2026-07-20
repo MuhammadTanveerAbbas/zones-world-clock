@@ -1,55 +1,69 @@
+import { GitHubIcon, LinkedInIcon, XIcon } from "./icons";
+import { Logo } from "./logo";
+
 const SOCIAL_LINKS = [
 	{
-		label: "X",
+		icon: <XIcon size={14} />,
 		href: "https://x.com/m_tanveerabbas",
 		ariaLabel: "X (Twitter)",
 	},
 	{
-		label: "LinkedIn",
+		icon: <LinkedInIcon size={14} />,
 		href: "https://linkedin.com/in/muhammadtanveerabbas",
 		ariaLabel: "LinkedIn",
 	},
 	{
-		label: "GitHub",
+		icon: <GitHubIcon size={14} />,
 		href: "https://github.com/muhammadtanveerabbas",
 		ariaLabel: "GitHub",
 	},
 ] as const;
 
-const linkClassName =
-	"font-mono text-[9px] sm:text-[10px] uppercase tracking-widest px-2.5 py-1 border-2 border-(--color-border) text-(--color-muted-foreground) hover:bg-(--color-foreground) hover:text-(--color-background) hover:border-(--color-foreground) transition-[background-color,border-color,color] duration-75";
+const iconLinkClassName =
+	"flex items-center justify-center w-8 h-8 border-[2.5px] border-(--color-border) text-(--color-muted-foreground) hover:bg-(--color-foreground) hover:text-(--color-background) hover:border-(--color-foreground) transition-[background-color,border-color,color] duration-100 neo-btn";
 
 export function SiteFooter() {
 	return (
-		<footer className="border-t-2 border-(--color-border) px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 bg-(--color-surface)">
-			<span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-widest text-(--color-muted-foreground) text-center sm:text-left">
-				Made by{" "}
+		<footer className="border-t-[3px] border-(--color-border) bg-(--color-surface)">
+			<div className="px-3 sm:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
 				<a
-					href="https://themvpguy.vercel.app/"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-(--color-foreground) hover:text-(--color-accent) transition-colors underline-offset-2 hover:underline"
+					href="/"
+					className="flex items-center gap-2 no-underline text-(--color-foreground) shrink-0 group"
 				>
-					Muhammad Tanveer Abbas
+					<Logo
+						size={18}
+						className="transition-transform duration-500 group-hover:rotate-[360deg]"
+					/>
+					<span className="font-sans font-bold text-[10px] uppercase tracking-tight">
+						Zones
+					</span>
 				</a>
-			</span>
-			<nav
-				aria-label="Social links"
-				className="flex items-center gap-1.5 sm:gap-2"
-			>
-				{SOCIAL_LINKS.map(({ label, href, ariaLabel }) => (
+
+				<div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+					<nav aria-label="Social links" className="flex items-center gap-1.5">
+						{SOCIAL_LINKS.map(({ icon, href, ariaLabel }) => (
+							<a
+								key={ariaLabel}
+								href={href}
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label={ariaLabel}
+								className={iconLinkClassName}
+							>
+								{icon}
+							</a>
+						))}
+					</nav>
 					<a
-						key={label}
-						href={href}
+						href="https://themvpguy.vercel.app/"
 						target="_blank"
 						rel="noopener noreferrer"
-						aria-label={ariaLabel}
-						className={linkClassName}
+						className="font-sans font-semibold text-[9px] sm:text-[10px] uppercase tracking-wide text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors shrink-0"
 					>
-						{label}
+						The MVP Guy
 					</a>
-				))}
-			</nav>
+				</div>
+			</div>
 		</footer>
 	);
 }

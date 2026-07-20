@@ -109,7 +109,7 @@ export function ZoneSharePanel({
 		>
 			<div className="p-4 sm:p-5 space-y-4">
 				<div className="space-y-2">
-					<p className="font-mono text-[9px] uppercase tracking-widest text-(--color-muted-foreground)">
+					<p className="font-sans font-semibold text-[9px] uppercase tracking-wide text-(--color-muted-foreground)">
 						Export your current time zone set
 					</p>
 					<div className="flex flex-wrap gap-2">
@@ -145,8 +145,8 @@ export function ZoneSharePanel({
 					</div>
 				</div>
 
-				<div className="border-t border-(--color-border) pt-4 space-y-2">
-					<p className="font-mono text-[9px] uppercase tracking-widest text-(--color-muted-foreground)">
+				<div className="border-t-[2.5px] border-(--color-border) pt-4 space-y-2">
+					<p className="font-sans font-semibold text-[9px] uppercase tracking-wide text-(--color-muted-foreground)">
 						Import a time zone set
 					</p>
 					<textarea
@@ -155,9 +155,9 @@ export function ZoneSharePanel({
 							setImportText(e.target.value);
 							setError(null);
 						}}
-						placeholder="Paste JSON or a share link here…"
+						placeholder="Paste JSON or a share link here..."
 						rows={4}
-						className="w-full font-mono text-[11px] p-3 border-2 border-(--color-border) bg-(--color-surface) text-(--color-foreground) placeholder:text-(--color-muted-foreground) outline-none resize-none"
+						className="w-full font-mono text-[11px] p-3 border-[3px] border-(--color-border) bg-(--color-surface) text-(--color-foreground) placeholder:text-(--color-muted-foreground) outline-none resize-none"
 					/>
 					<div className="flex flex-wrap items-center gap-2">
 						<PixelButton variant="primary" size="sm" onClick={handleImport}>
@@ -181,12 +181,12 @@ export function ZoneSharePanel({
 				</div>
 
 				{status && (
-					<p className="font-mono text-[9px] text-(--color-delta-positive)">
+					<p className="font-sans font-semibold text-[9px] text-(--color-delta-positive)">
 						{status}
 					</p>
 				)}
 				{error && (
-					<p className="font-mono text-[9px] text-(--color-delta-negative)">
+					<p className="font-sans font-semibold text-[9px] text-(--color-delta-negative)">
 						{error}
 					</p>
 				)}

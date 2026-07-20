@@ -96,7 +96,7 @@ export function OverlayPanel({
 			? {
 					boxShadow: `${6 + glowOffset}px ${6 + glowOffset}px 0 0 var(--pixel)`,
 				}
-			: undefined;
+			: { boxShadow: "6px 6px 0 0 var(--pixel)" };
 
 	return (
 		<AnimatePresence>
@@ -130,23 +130,22 @@ export function OverlayPanel({
 						className={[
 							"relative w-full",
 							"bg-(--color-surface-elev) text-(--color-foreground)",
-							"border-2 border-(--color-border)",
-							"sm:shadow-[6px_6px_0_0_var(--pixel)]",
+							"border-[3px] border-(--color-border)",
 							"max-h-[92vh] sm:max-h-[85vh] flex flex-col",
 							WIDTH_CLASSES[width],
 						].join(" ")}
 						style={{ borderRadius: 0, ...shadowStyle }}
 						onKeyDown={handleKey}
 					>
-						<div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-b-2 border-(--color-border) shrink-0 bg-(--color-surface)">
-							<span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-(--color-foreground)">
+						<div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-b-[3px] border-(--color-border) shrink-0 bg-(--color-surface)">
+							<span className="font-sans font-bold text-[10px] sm:text-[11px] uppercase tracking-wide text-(--color-foreground)">
 								{title}
 							</span>
 							<button
 								type="button"
 								onClick={onClose}
 								aria-label="Close"
-								className="pixel-btn inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-widest px-2 py-1 border-2 border-(--color-border) text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-(--color-foreground)/5 transition-colors duration-75 cursor-pointer"
+								className="neo-btn inline-flex items-center gap-1 font-sans font-semibold text-[9px] uppercase tracking-wide px-2 py-1 border-[2.5px] border-(--color-border) text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-(--color-foreground)/5 transition-colors duration-100 cursor-pointer"
 							>
 								<CloseIcon size={10} />
 								<span>esc</span>
@@ -156,7 +155,7 @@ export function OverlayPanel({
 							{children}
 						</div>
 						{footer && (
-							<div className="border-t-2 border-(--color-border) px-4 sm:px-5 py-2.5 bg-(--color-surface) shrink-0">
+							<div className="border-t-[3px] border-(--color-border) px-4 sm:px-5 py-2.5 bg-(--color-surface) shrink-0">
 								{footer}
 							</div>
 						)}

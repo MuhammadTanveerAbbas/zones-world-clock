@@ -236,15 +236,15 @@ export function MusicPlayer({
 				<SoundVisualizer active={activeSound !== "none"} />
 				<div className="relative z-10 p-4 sm:p-5 space-y-4">
 					{activeSound !== "none" && activeSoundMeta && (
-						<div className="flex items-center gap-3 p-3 border border-(--color-accent) bg-(--color-accent)/[0.05] rounded-lg mb-3">
+						<div className="flex items-center gap-3 p-3 border-[3px] border-(--color-accent) bg-(--color-accent)/[0.05] mb-3">
 							{activeSoundMeta.icon}
 							<div className="flex-1 min-w-0">
-								<div className="font-mono text-[10px] uppercase tracking-widest text-(--color-foreground) font-bold">
+								<div className="font-sans font-bold text-[10px] uppercase tracking-wide text-(--color-foreground)">
 									{activeSoundMeta.label}
 								</div>
-								<div className="h-1.5 border border-(--color-border) mt-1 overflow-hidden bg-(--color-muted)/30">
+								<div className="h-1.5 border-[2.5px] border-(--color-border) mt-1 overflow-hidden bg-(--color-muted)/30">
 									<div
-										className="h-full bg-(--color-foreground) transition-all duration-75"
+										className="h-full bg-(--color-foreground) transition-all duration-100"
 										style={{ width: `${Math.min(100, amplitude * 500)}%` }}
 									/>
 								</div>
@@ -276,14 +276,14 @@ export function MusicPlayer({
 								type="button"
 								onClick={() => handlePlay(s.value)}
 								className={[
-									"flex flex-col items-center gap-1.5 p-3 sm:p-3.5 border rounded-lg transition-all duration-75 cursor-pointer",
+									"flex flex-col items-center gap-1.5 p-3 sm:p-3.5 border-[3px] transition-all duration-100 cursor-pointer",
 									activeSound === s.value
 										? "border-(--color-foreground) bg-(--color-foreground) text-(--color-background)"
 										: "border-(--color-border) hover:bg-(--color-foreground)/[0.04] hover:border-(--color-muted) bg-(--color-background)",
 								].join(" ")}
 							>
 								{s.icon}
-								<span className="font-mono text-[8px] uppercase tracking-widest text-center leading-tight">
+								<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-center leading-tight">
 									{s.label}
 								</span>
 								{activeSound === s.value && (
@@ -312,8 +312,8 @@ export function MusicPlayer({
 					</div>
 
 					{activeSound !== "none" && (
-						<div className="flex items-center gap-2 pt-1 border-t border-(--color-border)">
-							<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground) w-6 shrink-0">
+						<div className="flex items-center gap-2 pt-1 border-t-[2.5px] border-(--color-border)">
+							<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground) w-6 shrink-0">
 								<VolumeIcon size={12} />
 							</span>
 							<input

@@ -36,7 +36,7 @@ export function BusinessHoursHeatmap({
 				);
 				return (
 					<div key={zone.id} className="flex items-center gap-2">
-						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground) w-16 truncate shrink-0">
+						<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground) w-16 truncate shrink-0">
 							{zone.label}
 						</span>
 						<div
@@ -55,7 +55,7 @@ export function BusinessHoursHeatmap({
 					</div>
 				);
 			})}
-			<div className="flex items-center gap-3 font-mono text-[7px] uppercase tracking-widest text-(--color-muted-foreground)">
+			<div className="flex items-center gap-3 font-sans font-semibold text-[7px] uppercase tracking-wide text-(--color-muted-foreground)">
 				<span className="flex items-center gap-1">
 					<span className="w-2 h-2 bg-(--color-delta-positive)/60" />
 					Core
@@ -113,15 +113,15 @@ export function MeetingFinder({
 			width="lg"
 		>
 			<div className="p-4 sm:p-5 space-y-4">
-				<p className="font-mono text-[9px] uppercase tracking-widest text-(--color-muted-foreground)">
+				<p className="font-sans font-semibold text-[9px] uppercase tracking-wide text-(--color-muted-foreground)">
 					Working hours: {workingHours.start}:00 – {workingHours.end}:00 per
 					zone
 				</p>
 
 				{overlap ? (
 					<div className="space-y-3">
-						<div className="p-3 border border-(--color-border) bg-(--color-delta-positive)/5">
-							<p className="font-mono text-[10px] uppercase tracking-widest text-(--color-foreground) font-bold">
+						<div className="p-3 border-[3px] border-(--color-border) bg-(--color-delta-positive)/5">
+							<p className="font-sans font-bold text-[10px] uppercase tracking-wide text-(--color-foreground)">
 								Best overlap window
 							</p>
 							<p className="font-mono text-sm tabular-nums mt-1 text-(--color-foreground)">
@@ -145,7 +145,7 @@ export function MeetingFinder({
 
 						{timelineSegments && (
 							<div className="space-y-1">
-								<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
+								<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground)">
 									24h timeline (home reference)
 								</span>
 								<div
@@ -168,14 +168,14 @@ export function MeetingFinder({
 						)}
 					</div>
 				) : (
-					<p className="font-mono text-[10px] text-(--color-muted-foreground)">
+					<p className="font-sans font-semibold text-[10px] text-(--color-muted-foreground)">
 						No overlapping working-hours window found for all {zones.length}{" "}
 						zones today. Try adjusting working hours or fewer zones.
 					</p>
 				)}
 
-				<div className="border-t border-(--color-border) pt-3">
-					<p className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground) mb-2">
+				<div className="border-t-[2.5px] border-(--color-border) pt-3">
+					<p className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground) mb-2">
 						Per-zone heatmap
 					</p>
 					<BusinessHoursHeatmap

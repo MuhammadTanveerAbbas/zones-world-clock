@@ -53,11 +53,11 @@ export function PixelButton({
 			type="button"
 			{...rest}
 			className={[
-				"pixel-btn inline-flex items-center justify-center gap-1 sm:gap-1.5",
-				"font-mono uppercase tracking-widest border-2",
+				"neo-btn inline-flex items-center justify-center gap-1 sm:gap-1.5",
+				"font-sans font-semibold uppercase tracking-wide border-[2.5px]",
 				"rounded-none cursor-pointer select-none",
 				"disabled:opacity-40 disabled:cursor-not-allowed",
-				"transition-[transform,filter,background-color,border-color,color] duration-75",
+				"transition-[transform,filter,background-color,border-color,color] duration-100",
 				sizeClass,
 				variantClass,
 				fullWidth ? "w-full" : "",
@@ -99,8 +99,8 @@ export function PixelBadge({
 		<span
 			className={[
 				"inline-flex items-center gap-1 px-1.5 py-0.5",
-				"font-mono uppercase tracking-widest text-[8px] sm:text-[9px]",
-				"border-2",
+				"font-sans font-semibold uppercase tracking-wide text-[8px] sm:text-[9px]",
+				"border-[2.5px]",
 				colorClass,
 				className,
 			].join(" ")}

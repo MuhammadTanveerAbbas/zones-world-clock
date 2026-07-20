@@ -3,7 +3,6 @@
 import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
 import {
 	formatDate,
-	formatSeconds,
 	getDSTTransitionInfo,
 	getTimezoneAbbreviation,
 	getZoneTimeInfo,
@@ -44,16 +43,16 @@ export function ScrollView({
 	}, [zones, homeId]);
 
 	return (
-		<div className="flex-1 overflow-y-auto">
+		<div className="">
 			<Reorder.Group
 				axis="y"
 				values={sorted.map((z) => z.id)}
 				onReorder={(newIds) => onReorder(newIds)}
-				className="flex flex-col gap-1.5 sm:gap-2 p-2 sm:p-4 md:p-6"
+				className="flex flex-col gap-2 sm:gap-3 p-2 sm:p-4 md:p-6"
 			>
 				{sorted.map((zone) => {
 					const isHome = zone.id === homeId;
-					const { delta, deltaStr, timeStr, secondsStr, period, dayDelta } =
+					const { delta, deltaStr, timeStr, period, dayDelta } =
 						getZoneTimeInfo(zone, homeId, homeTz, displayTime, use24h);
 					const abbrev = getTimezoneAbbreviation(zone.tz, displayTime);
 					const dst = isDST(zone.tz, displayTime);
@@ -77,16 +76,16 @@ export function ScrollView({
 									? { backgroundImage: ambientGradient }
 									: undefined
 							}
-							className={`group relative border border-(--color-border) rounded-lg transition-all duration-200 px-2 sm:px-5 md:px-8 py-2.5 sm:py-5 ${
+							className={`group relative border-[3px] border-(--color-border) transition-all duration-150 px-2 sm:px-5 md:px-8 py-2.5 sm:py-5 ${
 								isHome
-									? "border-l-4 border-l-(--color-accent) bg-(--color-accent)/[0.05]"
-									: "hover:bg-(--color-foreground)/[0.02] hover:border-(--color-muted) cursor-grab active:cursor-grabbing"
+									? "border-l-[6px] border-l-(--color-accent) bg-(--color-surface) shadow-[6px_6px_0_0_var(--pixel)]"
+									: "bg-(--color-surface) shadow-[4px_4px_0_0_var(--pixel)] hover:shadow-[6px_6px_0_0_var(--pixel)] hover:translate-x-[-2px] hover:translate-y-[-2px] cursor-grab active:cursor-grabbing"
 							}`}
 						>
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
 									<span
-										className={`fi fi-${zone.countryCode} shrink-0 rounded`}
+										className={`fi fi-${zone.countryCode} shrink-0`}
 										style={{
 											fontSize: "clamp(1.5rem, 4vw, 3.5rem)",
 											lineHeight: 1,
@@ -94,7 +93,7 @@ export function ScrollView({
 									/>
 									<div className="min-w-0 flex-1">
 										<div className="flex items-center justify-between gap-2">
-											<div className="font-mono text-base sm:text-2xl md:text-3xl font-bold text-(--color-foreground) tracking-wider uppercase leading-none truncate">
+											<div className="font-sans text-base sm:text-2xl md:text-3xl font-bold text-(--color-foreground) tracking-wide uppercase leading-none truncate">
 												{isHome && <span className="home-prompt" />}
 												{zone.label}
 											</div>
@@ -108,21 +107,10 @@ export function ScrollView({
 												>
 													{timeStr}
 												</div>
-												{secondsStr && (
-													<span
-														className="font-mono font-bold tabular-nums tracking-wider text-(--color-muted-foreground)"
-														style={{
-															fontSize: "clamp(10px, 2vw, 24px)",
-															lineHeight: 1,
-														}}
-													>
-														:{secondsStr}
-													</span>
-												)}
 												<div className="flex flex-col items-end">
 													{period && (
 														<span
-															className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"
+															className="font-sans font-bold text-(--color-muted-foreground) tracking-wider"
 															style={{
 																fontSize: "clamp(8px, 1.5vw, 20px)",
 																lineHeight: 1,
@@ -132,7 +120,7 @@ export function ScrollView({
 														</span>
 													)}
 													{dateStr && (
-														<span className="font-mono text-[7px] sm:text-[9px] text-(--color-muted-foreground) tracking-wider mt-0.5">
+														<span className="font-sans text-[7px] sm:text-[9px] text-(--color-muted-foreground) tracking-wide mt-0.5">
 															{dateStr}
 														</span>
 													)}
@@ -142,29 +130,29 @@ export function ScrollView({
 									</div>
 								</div>
 							</div>
-							<div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
-								<span className="font-mono text-[9px] sm:text-xs md:text-sm text-(--color-muted-foreground) uppercase tracking-widest truncate">
+							<div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 flex-wrap">
+								<span className="font-sans text-[9px] sm:text-xs md:text-sm text-(--color-muted-foreground) uppercase tracking-wide truncate">
 									{zone.sublabel}
 								</span>
 								{abbrev && (
-									<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
+									<span className="font-sans font-semibold text-[7px] sm:text-[9px] uppercase tracking-wide text-(--color-muted-foreground) border-[2.5px] border-(--color-border) px-1 py-0.5">
 										{abbrev}
 									</span>
 								)}
 								{dst && (
-									<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-amber-500 flex items-center gap-0.5">
+									<span className="font-sans font-semibold text-[7px] sm:text-[9px] uppercase tracking-wide text-amber-500 flex items-center gap-0.5">
 										<DstIcon size={10} />
 										DST
 									</span>
 								)}
 								{isHome && (
-									<span className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded">
+									<span className="font-sans font-semibold text-[7px] sm:text-[9px] uppercase tracking-wide text-(--color-muted-foreground) border-[2.5px] border-(--color-border) px-1 sm:px-1.5 py-0.5">
 										Home
 									</span>
 								)}
 								{deltaStr && (
 									<span
-										className={`font-mono text-xs sm:text-base md:text-lg font-bold tracking-wider ${
+										className={`font-sans text-xs sm:text-base md:text-lg font-bold tracking-wider ${
 											delta > 0
 												? "text-(--color-delta-positive)"
 												: "text-(--color-delta-negative)"
@@ -175,7 +163,7 @@ export function ScrollView({
 								)}
 								{dayDelta !== 0 && (
 									<span
-										className={`font-mono text-[10px] sm:text-sm font-bold ${
+										className={`font-sans text-[10px] sm:text-sm font-bold ${
 											dayDelta > 0
 												? "text-(--color-delta-positive)"
 												: "text-(--color-delta-negative)"
@@ -189,14 +177,14 @@ export function ScrollView({
 										<button
 											type="button"
 											onClick={() => onSetHome(zone.id)}
-											className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
+											className="font-sans font-semibold text-[7px] sm:text-[9px] uppercase tracking-wide border-[2.5px] border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
 										>
 											Set home
 										</button>
 										<button
 											type="button"
 											onClick={() => onRemove(zone.id)}
-											className="font-mono text-[7px] sm:text-[9px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
+											className="font-sans font-semibold text-[7px] sm:text-[9px] uppercase tracking-wide border-[2.5px] border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
 										>
 											&times;
 										</button>

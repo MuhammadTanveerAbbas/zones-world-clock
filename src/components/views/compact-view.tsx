@@ -2,7 +2,7 @@
 
 import type { ZoneGroup } from "@/lib/group-zones";
 import { getAmbientInlineGradient, getTimeOfDay } from "@/lib/time-of-day";
-import { formatDeltaHours, formatSeconds } from "@/lib/time-utils";
+import { formatDeltaHours } from "@/lib/time-utils";
 import * as m from "motion/react-m";
 
 export function CompactView({
@@ -19,8 +19,8 @@ export function CompactView({
 	displayTime?: Date;
 }) {
 	return (
-		<div className="flex-1 overflow-y-auto scrollbar-hide p-2 sm:p-6 md:p-10">
-			<div className="flex flex-col gap-1.5 sm:gap-3 w-full">
+		<div className="p-2 sm:p-6 md:p-10">
+			<div className="flex flex-col gap-2 sm:gap-3 w-full">
 				{groups.map((group, i) => {
 					const isHomeGroup = group.offset === 0;
 					const deltaStr = formatDeltaHours(group.offset);
@@ -45,10 +45,10 @@ export function CompactView({
 									? { backgroundImage: ambientGradient }
 									: undefined
 							}
-							className={`flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-5 py-2.5 sm:py-4 border rounded-full transition-all duration-200 ${
+							className={`flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-5 py-2.5 sm:py-4 border-[3px] border-(--color-border) transition-all duration-150 ${
 								isHomeGroup
-									? "border-accent/40 bg-(--color-accent)/[0.08] shadow-sm"
-									: "border-(--color-border) hover:border-accent/30 hover:bg-(--color-foreground)/[0.02] hover:shadow-sm"
+									? "border-l-[6px] border-l-accent bg-(--color-surface) shadow-[6px_6px_0_0_var(--pixel)]"
+									: "bg-(--color-surface) shadow-[4px_4px_0_0_var(--pixel)] hover:shadow-[6px_6px_0_0_var(--pixel)] hover:translate-x-[-2px] hover:translate-y-[-2px]"
 							}`}
 						>
 							<div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
@@ -56,7 +56,7 @@ export function CompactView({
 									{group.zones.map((zone) => (
 										<span
 											key={zone.id}
-											className={`fi fi-${zone.countryCode} rounded`}
+											className={`fi fi-${zone.countryCode}`}
 											style={{
 												fontSize: "clamp(1rem, 3vw, 1.8rem)",
 												lineHeight: 1,
@@ -65,12 +65,12 @@ export function CompactView({
 									))}
 								</div>
 								<div className="flex flex-col min-w-0">
-									<span className="font-mono text-xs sm:text-sm font-bold tracking-wider uppercase text-(--color-foreground) leading-none truncate">
+									<span className="font-sans text-xs sm:text-sm font-bold tracking-wide uppercase text-(--color-foreground) leading-none truncate">
 										{group.zones.map((z) => z.label).join(", ")}
 									</span>
 									{deltaStr && (
 										<span
-											className={`font-mono text-[9px] sm:text-xs font-bold tracking-wider ${
+											className={`font-sans text-[9px] sm:text-xs font-bold tracking-wider ${
 												group.offset > 0
 													? "text-(--color-delta-positive)"
 													: "text-(--color-delta-negative)"
@@ -88,16 +88,8 @@ export function CompactView({
 								>
 									{group.timeStr}
 								</span>
-								{displayTime && (
-									<span
-										className="font-mono text-[10px] sm:text-xs font-bold tabular-nums tracking-wider text-(--color-muted-foreground)"
-										style={{ lineHeight: 1 }}
-									>
-										:{formatSeconds(displayTime, group.tz)}
-									</span>
-								)}
 								{group.period && (
-									<span className="font-mono text-[9px] sm:text-xs font-bold text-(--color-muted-foreground) tracking-wider">
+									<span className="font-sans text-[9px] sm:text-xs font-bold text-(--color-muted-foreground) tracking-wider">
 										{group.period}
 									</span>
 								)}

@@ -35,19 +35,12 @@ export function GridView({
 	}, [zones, homeId]);
 
 	return (
-		<div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6">
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
+		<div className="p-2 sm:p-4 md:p-6">
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
 				{sorted.map((zone, i) => {
 					const isHome = zone.id === homeId;
-					const {
-						delta,
-						deltaStr,
-						timeStr,
-						secondsStr,
-						period,
-						dayDelta,
-						dstTransition,
-					} = getZoneTimeInfo(zone, homeId, homeTz, displayTime, use24h);
+					const { delta, deltaStr, timeStr, period, dayDelta, dstTransition } =
+						getZoneTimeInfo(zone, homeId, homeTz, displayTime, use24h);
 					const abbrev = getTimezoneAbbreviation(zone.tz, displayTime);
 					const ambientGradient = ambientMode
 						? getAmbientInlineGradient(
@@ -68,10 +61,10 @@ export function GridView({
 									? { backgroundImage: ambientGradient }
 									: undefined
 							}
-							className={`group relative flex flex-col gap-2 sm:gap-4 p-2.5 sm:p-5 md:p-6 border border-(--color-border) rounded-lg transition-all duration-200 ${
+							className={`group relative flex flex-col gap-2 sm:gap-4 p-2.5 sm:p-5 md:p-6 border-[3px] border-(--color-border) transition-all duration-150 ${
 								isHome
-									? "sm:col-span-2 border-l-4 border-l-(--color-accent) bg-(--color-accent)/[0.05] shadow-sm"
-									: "hover:bg-(--color-foreground)/[0.02] hover:shadow-md hover:border-(--color-muted)"
+									? "sm:col-span-2 border-l-[6px] border-l-(--color-accent) bg-(--color-surface) shadow-[6px_6px_0_0_var(--pixel)]"
+									: "bg-(--color-surface) shadow-[4px_4px_0_0_var(--pixel)] hover:shadow-[6px_6px_0_0_var(--pixel)] hover:translate-x-[-2px] hover:translate-y-[-2px]"
 							}`}
 						>
 							{!isHome && (
@@ -79,14 +72,14 @@ export function GridView({
 									<button
 										type="button"
 										onClick={() => onSetHome(zone.id)}
-										className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
+										className="font-sans font-semibold text-[7px] sm:text-[8px] uppercase tracking-wide border-[2.5px] border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:border-(--color-muted) cursor-pointer transition-colors"
 									>
 										Set home
 									</button>
 									<button
 										type="button"
 										onClick={() => onRemove(zone.id)}
-										className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest border border-(--color-border) px-1 sm:px-1.5 py-0.5 rounded text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
+										className="font-sans font-semibold text-[7px] sm:text-[8px] uppercase tracking-wide border-[2.5px] border-(--color-border) px-1 sm:px-1.5 py-0.5 text-(--color-delta-negative) hover:border-(--color-delta-negative) cursor-pointer transition-colors"
 									>
 										&times;
 									</button>
@@ -94,7 +87,7 @@ export function GridView({
 							)}
 							<div className="flex items-center gap-2 sm:gap-3">
 								<span
-									className={`fi fi-${zone.countryCode} shrink-0 rounded`}
+									className={`fi fi-${zone.countryCode} shrink-0`}
 									style={{
 										fontSize: isHome
 											? "clamp(1.8rem, 5vw, 3.5rem)"
@@ -103,27 +96,27 @@ export function GridView({
 									}}
 								/>
 								<div className="min-w-0 flex flex-col">
-									<div className="font-mono text-base sm:text-xl md:text-2xl font-bold text-(--color-foreground) truncate tracking-wider uppercase leading-none">
+									<div className="font-sans text-base sm:text-xl md:text-2xl font-bold text-(--color-foreground) truncate tracking-wide uppercase leading-none">
 										{isHome && <span className="home-prompt" />}
 										{zone.label}
 									</div>
-									<div className="flex items-center gap-1.5 sm:gap-2">
-										<span className="font-mono text-[9px] sm:text-xs text-(--color-muted-foreground) truncate uppercase tracking-widest">
+									<div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+										<span className="font-sans text-[9px] sm:text-xs text-(--color-muted-foreground) truncate uppercase tracking-wide">
 											{zone.sublabel}
 										</span>
 										{abbrev && (
-											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
+											<span className="font-sans font-semibold text-[7px] sm:text-[8px] uppercase tracking-wide text-(--color-muted-foreground) border-[2.5px] border-(--color-border) px-1 py-0.5">
 												{abbrev}
 											</span>
 										)}
 										{dstTransition && (
-											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-amber-500 flex items-center gap-0.5">
+											<span className="font-sans font-semibold text-[7px] sm:text-[8px] uppercase tracking-wide text-amber-500 flex items-center gap-0.5">
 												<DstIcon size={10} />
 												{dstTransition.label}
 											</span>
 										)}
 										{isHome && (
-											<span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-widest text-(--color-muted-foreground) border border-(--color-border) px-1 py-0.5 rounded">
+											<span className="font-sans font-semibold text-[7px] sm:text-[8px] uppercase tracking-wide text-(--color-muted-foreground) border-[2.5px] border-(--color-border) px-1 py-0.5">
 												Home
 											</span>
 										)}
@@ -131,7 +124,7 @@ export function GridView({
 								</div>
 								{deltaStr && (
 									<span
-										className={`ml-auto font-mono text-sm sm:text-lg font-bold tracking-wider ${
+										className={`ml-auto font-sans text-sm sm:text-lg font-bold tracking-wider ${
 											delta > 0
 												? "text-(--color-delta-positive)"
 												: "text-(--color-delta-negative)"
@@ -153,20 +146,9 @@ export function GridView({
 								>
 									{timeStr}
 								</div>
-								<span
-									className="font-mono font-bold tabular-nums tracking-wider text-(--color-muted-foreground)"
-									style={{
-										fontSize: isHome
-											? "clamp(14px, 2.5vw, 28px)"
-											: "clamp(12px, 2vw, 22px)",
-										lineHeight: 1,
-									}}
-								>
-									:{secondsStr}
-								</span>
 								{period && (
 									<span
-										className="font-mono font-bold text-(--color-muted-foreground) tracking-wider"
+										className="font-sans font-bold text-(--color-muted-foreground) tracking-wider"
 										style={{
 											fontSize: isHome
 												? "clamp(12px, 2vw, 24px)"
@@ -179,7 +161,7 @@ export function GridView({
 								)}
 								{dayDelta !== 0 && (
 									<span
-										className={`font-mono text-xs sm:text-sm font-bold ml-1 ${
+										className={`font-sans text-xs sm:text-sm font-bold ml-1 ${
 											dayDelta > 0
 												? "text-(--color-delta-positive)"
 												: "text-(--color-delta-negative)"

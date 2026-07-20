@@ -108,17 +108,18 @@ export function CommandPalette({
 			<div className="w-full max-w-md mx-4">
 				<Command
 					label="Command menu"
-					className="border border-(--color-border) rounded-xl bg-(--color-background) shadow-2xl overflow-hidden"
+					className="border-[3px] border-(--color-border) bg-(--color-background) overflow-hidden"
+					style={{ boxShadow: "6px 6px 0 0 var(--pixel)" }}
 				>
 					<Command.Input
 						ref={inputRef}
 						value={query}
 						onValueChange={setQuery}
 						placeholder="Type a command..."
-						className="w-full px-4 py-3 font-mono text-sm bg-transparent text-(--color-foreground) placeholder:text-(--color-muted-foreground) border-b border-(--color-border) outline-none"
+						className="w-full px-4 py-3 font-sans font-semibold text-sm bg-transparent text-(--color-foreground) placeholder:text-(--color-muted-foreground) border-b-[3px] border-(--color-border) outline-none"
 					/>
 					<Command.List className="max-h-64 overflow-y-auto p-2">
-						<Command.Empty className="py-6 text-center font-mono text-[10px] text-(--color-muted-foreground)">
+						<Command.Empty className="py-6 text-center font-sans font-semibold text-[10px] text-(--color-muted-foreground)">
 							No results found
 						</Command.Empty>
 
@@ -126,7 +127,7 @@ export function CommandPalette({
 							<Command.Item
 								value="stack-view"
 								onSelect={() => handleSelect("view-stack")}
-								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-sans text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
 								<div className="flex items-center gap-2">
 									<StackIcon size={14} />
@@ -139,7 +140,7 @@ export function CommandPalette({
 							<Command.Item
 								value="scroll-view"
 								onSelect={() => handleSelect("view-scroll")}
-								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-sans text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
 								<div className="flex items-center gap-2">
 									<ListIcon size={14} />
@@ -152,7 +153,7 @@ export function CommandPalette({
 							<Command.Item
 								value="grid-view"
 								onSelect={() => handleSelect("view-grid")}
-								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-sans text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
 								<div className="flex items-center gap-2">
 									<GridIcon size={14} />
@@ -165,7 +166,7 @@ export function CommandPalette({
 							<Command.Item
 								value="compact-view"
 								onSelect={() => handleSelect("view-compact")}
-								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-sans text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
 								<div className="flex items-center gap-2">
 									<CompactIcon size={14} />
@@ -181,7 +182,7 @@ export function CommandPalette({
 							<Command.Item
 								value="toggle-format"
 								onSelect={() => handleSelect("toggle-format")}
-								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-sans text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
 								<div className="flex items-center gap-2">
 									<ClockIcon size={14} />
@@ -194,7 +195,7 @@ export function CommandPalette({
 							<Command.Item
 								value="toggle-dashboard"
 								onSelect={() => handleSelect("toggle-dashboard")}
-								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-sans text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
 								<div className="flex items-center gap-2">
 									<DashboardIcon size={14} />
@@ -207,7 +208,7 @@ export function CommandPalette({
 							<Command.Item
 								value="export-zones"
 								onSelect={() => handleSelect("export-zones")}
-								className="font-mono text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
+								className="font-sans text-[11px] px-3 py-2 flex items-center justify-between cursor-pointer aria-selected:bg-(--color-foreground)/[0.06]"
 							>
 								<div className="flex items-center gap-2">
 									<DownloadIcon size={14} />
@@ -223,7 +224,7 @@ export function CommandPalette({
 							<Command.Item
 								value="current-view"
 								disabled
-								className="font-mono text-[10px] px-3 py-2 text-(--color-muted-foreground) cursor-default"
+								className="font-sans text-[10px] px-3 py-2 text-(--color-muted-foreground) cursor-default"
 							>
 								<div className="flex items-center gap-2">
 									<CmdIcon size={14} />

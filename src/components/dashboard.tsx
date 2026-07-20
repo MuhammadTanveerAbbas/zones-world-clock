@@ -115,49 +115,49 @@ export function Dashboard({
 		<OverlayPanel open={open} onClose={onClose} title="Dashboard" width="lg">
 			<div className="p-4 sm:p-5 space-y-4">
 				<div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-					<div className="flex flex-col items-center p-2 sm:p-3 rounded-lg border border-(--color-border) bg-(--color-foreground)/[0.02]">
-						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
+					<div className="flex flex-col items-center p-3 sm:p-4 border-[3px] border-(--color-border) bg-(--color-surface) shadow-[4px_4px_0_0_var(--pixel)]">
+						<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground)">
 							Today
 						</span>
 						<span className="font-mono text-sm sm:text-base font-bold tabular-nums mt-0.5 text-(--color-foreground)">
 							{formatMinutes(todayStats.focusMs)}
 						</span>
-						<span className="font-mono text-[8px] text-(--color-muted-foreground)">
+						<span className="font-sans text-[8px] text-(--color-muted-foreground)">
 							{todayStats.sessions} session
 							{todayStats.sessions !== 1 ? "s" : ""}
 						</span>
 					</div>
-					<div className="flex flex-col items-center p-2 sm:p-3 rounded-lg border border-(--color-border) bg-(--color-foreground)/[0.02]">
-						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
+					<div className="flex flex-col items-center p-3 sm:p-4 border-[3px] border-(--color-border) bg-(--color-surface) shadow-[4px_4px_0_0_var(--pixel)]">
+						<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground)">
 							This week
 						</span>
 						<span className="font-mono text-sm sm:text-base font-bold tabular-nums mt-0.5 text-(--color-foreground)">
 							{formatMinutes(weekStats.focusMs)}
 						</span>
-						<span className="font-mono text-[8px] text-(--color-muted-foreground)">
+						<span className="font-sans text-[8px] text-(--color-muted-foreground)">
 							{weekStats.sessions} session{weekStats.sessions !== 1 ? "s" : ""}
 						</span>
 					</div>
-					<div className="flex flex-col items-center p-2 sm:p-3 rounded-lg border border-(--color-border) bg-(--color-foreground)/[0.02]">
-						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
+					<div className="flex flex-col items-center p-3 sm:p-4 border-[3px] border-(--color-border) bg-(--color-surface) shadow-[4px_4px_0_0_var(--pixel)]">
+						<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground)">
 							This month
 						</span>
 						<span className="font-mono text-sm sm:text-base font-bold tabular-nums mt-0.5 text-(--color-foreground)">
 							{formatMinutes(monthStats.focusMs)}
 						</span>
-						<span className="font-mono text-[8px] text-(--color-muted-foreground)">
+						<span className="font-sans text-[8px] text-(--color-muted-foreground)">
 							{monthStats.sessions} session
 							{monthStats.sessions !== 1 ? "s" : ""}
 						</span>
 					</div>
-					<div className="flex flex-col items-center p-2 sm:p-3 rounded-lg border border-(--color-border) bg-(--color-foreground)/[0.02]">
-						<span className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground)">
+					<div className="flex flex-col items-center p-3 sm:p-4 border-[3px] border-(--color-border) bg-(--color-surface) shadow-[4px_4px_0_0_var(--pixel)]">
+						<span className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground)">
 							Streak
 						</span>
 						<span className="font-mono text-sm sm:text-base font-bold tabular-nums mt-0.5 text-(--color-foreground)">
 							{streak}d
 						</span>
-						<span className="font-mono text-[8px] text-(--color-muted-foreground)">
+						<span className="font-sans text-[8px] text-(--color-muted-foreground)">
 							Days
 						</span>
 					</div>
@@ -174,7 +174,7 @@ export function Dashboard({
 									dataKey="day"
 									tick={{
 										fontSize: 9,
-										fontFamily: "var(--font-mono)",
+										fontFamily: "var(--font-sans)",
 										fill: "var(--muted-fg)",
 									}}
 									axisLine={false}
@@ -183,17 +183,17 @@ export function Dashboard({
 								<Tooltip
 									contentStyle={{
 										background: "var(--bg)",
-										border: "1px solid var(--border)",
-										borderRadius: "8px",
+										border: "3px solid var(--border)",
+										borderRadius: "0",
 										fontSize: "10px",
-										fontFamily: "var(--font-mono)",
+										fontFamily: "var(--font-sans)",
 									}}
 									labelStyle={{ color: "var(--fg)" }}
 								/>
 								<Bar
 									dataKey="focus"
 									fill="var(--fg)"
-									radius={[3, 3, 0, 0]}
+									radius={[0, 0, 0, 0]}
 									maxBarSize={32}
 									opacity={0.8}
 								/>
@@ -202,11 +202,11 @@ export function Dashboard({
 					</div>
 				)}
 
-				<div className="flex items-center justify-between border-t border-(--color-border) pt-3">
+				<div className="flex items-center justify-between border-t-[3px] border-(--color-border) pt-3">
 					<button
 						type="button"
 						onClick={() => setShowSessions(!showSessions)}
-						className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors cursor-pointer"
+						className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors cursor-pointer"
 					>
 						{showSessions
 							? "Hide session history"
@@ -216,7 +216,7 @@ export function Dashboard({
 						<button
 							type="button"
 							onClick={handleExport}
-							className="font-mono text-[8px] uppercase tracking-widest text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors cursor-pointer"
+							className="font-sans font-semibold text-[8px] uppercase tracking-wide text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors cursor-pointer"
 						>
 							Export JSON
 						</button>
@@ -228,13 +228,13 @@ export function Dashboard({
 						{recentSessions.map((s) => (
 							<div
 								key={s.id}
-								className="flex items-center justify-between font-mono text-[9px] px-2 py-1 rounded hover:bg-(--color-foreground)/[0.03]"
+								className="flex items-center justify-between font-sans text-[9px] px-2 py-1 hover:bg-(--color-foreground)/[0.03]"
 							>
 								<div className="flex items-center gap-2">
 									<div
 										className={`w-1.5 h-1.5 ${s.mode === "focus" ? "bg-(--color-delta-positive)" : "bg-(--color-muted)"}`}
 									/>
-									<span className="text-(--color-foreground)">
+									<span className="text-(--color-foreground) font-semibold">
 										{sessionLabel(s.mode)}
 									</span>
 									<span className="text-(--color-muted-foreground)">
@@ -249,7 +249,7 @@ export function Dashboard({
 					</div>
 				)}
 				{showSessions && recentSessions.length === 0 && (
-					<div className="font-mono text-[9px] text-(--color-muted-foreground) text-center py-2">
+					<div className="font-sans text-[9px] text-(--color-muted-foreground) text-center py-2">
 						No sessions yet. Complete a Pomodoro to see them here.
 					</div>
 				)}

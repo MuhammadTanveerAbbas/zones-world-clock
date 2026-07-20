@@ -3,28 +3,15 @@
 import { useClickSound } from "@/hooks/use-click-sound";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	MoonIcon,
-	SparkleIcon,
-	SparkleOffIcon,
-	SunIcon,
-	SystemIcon,
-} from "./icons";
+import { MoonIcon, SparkleIcon, SparkleOffIcon, SunIcon } from "./icons";
 import { PixelButton } from "./ui/pixel-button";
 
-type ThemeValue = "light" | "dark" | "system";
+type ThemeValue = "light" | "dark";
 
 const THEMES: { value: ThemeValue; label: string; icon: React.ReactNode }[] = [
 	{ value: "light", label: "Light", icon: <SunIcon size={12} /> },
 	{ value: "dark", label: "Dark", icon: <MoonIcon size={12} /> },
-	{ value: "system", label: "System", icon: <SystemIcon size={12} /> },
 ];
-
-function IconForTheme(theme: string | undefined) {
-	if (theme === "light") return <SunIcon size={14} />;
-	if (theme === "dark") return <MoonIcon size={14} />;
-	return <SystemIcon size={14} />;
-}
 
 export function ThemeSwitcher({
 	ambientMode,
@@ -83,19 +70,21 @@ export function ThemeSwitcher({
 				<PixelButton
 					variant="outline"
 					size="sm"
-					icon={IconForTheme(theme)}
+					icon={
+						theme === "light" ? <SunIcon size={12} /> : <MoonIcon size={12} />
+					}
 					onClick={() => {
 						setOpen(!open);
 						playClick();
 					}}
-					aria-label={`Theme: ${theme ?? "system"}`}
+					aria-label={`Theme: ${theme ?? "dark"}`}
 					aria-expanded={open}
 					aria-haspopup="menu"
 				/>
 				{open && (
 					<div
 						role="menu"
-						className="absolute right-0 top-full mt-1 z-50 flex flex-col border-2 border-(--color-border) bg-(--color-surface-elev) min-w-[140px] animate-slide-up"
+						className="absolute right-0 top-full mt-1 z-50 flex flex-col border-[2.5px] border-(--color-border) bg-(--color-surface-elev) min-w-[140px] animate-slide-up"
 						style={{ boxShadow: "4px 4px 0 0 var(--pixel)" }}
 					>
 						{THEMES.map(({ value, label, icon }) => (
@@ -110,8 +99,8 @@ export function ThemeSwitcher({
 									setOpen(false);
 								}}
 								className={[
-									"flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest px-3 py-2 cursor-pointer text-left w-full",
-									"transition-colors duration-75 border-b-2 border-(--color-border-subtle) last:border-b-0",
+									"flex items-center gap-2 font-sans font-semibold text-[10px] uppercase tracking-wide px-3 py-2 cursor-pointer text-left w-full",
+									"transition-colors duration-100 border-b-[2.5px] border-(--color-border-subtle) last:border-b-0",
 									theme === value
 										? "bg-(--color-foreground) text-(--color-background)"
 										: "text-(--color-muted-foreground) hover:bg-(--color-foreground)/5 hover:text-(--color-foreground)",
@@ -131,8 +120,8 @@ export function ThemeSwitcher({
 								setOpen(false);
 							}}
 							className={[
-								"flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest px-3 py-2 cursor-pointer text-left w-full",
-								"transition-colors duration-75",
+								"flex items-center gap-2 font-sans font-semibold text-[10px] uppercase tracking-wide px-3 py-2 cursor-pointer text-left w-full",
+								"transition-colors duration-100",
 								ambientMode
 									? "bg-(--color-foreground) text-(--color-background)"
 									: "text-(--color-muted-foreground) hover:bg-(--color-foreground)/5 hover:text-(--color-foreground)",

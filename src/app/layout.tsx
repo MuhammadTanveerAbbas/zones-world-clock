@@ -1,10 +1,15 @@
 import { PWARegister } from "@/components/pwa-register";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GeistMono } from "geist/font/mono";
-import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "flag-icons/css/flag-icons.min.css";
 import "./globals.css";
+
+const inter = Inter({
+	subsets: ["latin"],
+	variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
 	title: "Zones World Clock",
@@ -45,13 +50,13 @@ export default function RootLayout({
 				/>
 				<meta
 					name="theme-color"
-					content="#fafafa"
+					content="#ffffff"
 					media="(prefers-color-scheme: light)"
 				/>
 				<link rel="manifest" href="/manifest.json" />
 			</head>
 			<body
-				className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased bg-(--color-background) text-(--color-foreground)`}
+				className={`${inter.variable} ${GeistMono.variable} font-sans antialiased bg-(--color-background) text-(--color-foreground)`}
 			>
 				<ThemeProvider>
 					{children}

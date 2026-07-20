@@ -104,10 +104,10 @@ export function ZoneSearch({
 			}}
 		>
 			<div
-				className="w-full max-w-lg mx-3 sm:mx-4 border-2 border-(--color-border) bg-(--color-surface-elev) animate-slide-up"
+				className="w-full max-w-lg mx-3 sm:mx-4 border-[3px] border-(--color-border) bg-(--color-surface-elev) animate-slide-up"
 				style={{ boxShadow: "6px 6px 0 0 var(--pixel)" }}
 			>
-				<div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-5 border-b-2 border-(--color-border) bg-(--color-surface)">
+				<div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-5 border-b-[3px] border-(--color-border) bg-(--color-surface)">
 					<SearchIcon
 						size={18}
 						className="text-(--color-muted-foreground) shrink-0"
@@ -122,7 +122,7 @@ export function ZoneSearch({
 						}}
 						placeholder="Search city or country..."
 						aria-label="Search timezones"
-						className="flex-1 bg-transparent font-mono text-base sm:text-lg text-(--color-foreground) placeholder:text-(--color-muted-foreground) outline-none tracking-wider uppercase"
+						className="flex-1 bg-transparent font-sans text-base sm:text-lg text-(--color-foreground) placeholder:text-(--color-muted-foreground) outline-none tracking-wide uppercase font-semibold"
 					/>
 					<PixelButton
 						variant="ghost"
@@ -140,12 +140,12 @@ export function ZoneSearch({
 					aria-label="Timezone results"
 				>
 					{debouncedQuery && results.length === 0 && (
-						<li className="p-6 text-center font-mono text-sm text-(--color-muted-foreground) list-none">
+						<li className="p-6 text-center font-sans font-semibold text-sm text-(--color-muted-foreground) list-none">
 							No time zones found
 						</li>
 					)}
 					{!debouncedQuery && (
-						<li className="p-6 text-center font-mono text-sm text-(--color-muted-foreground) flex flex-col items-center gap-2 list-none">
+						<li className="p-6 text-center font-sans font-semibold text-sm text-(--color-muted-foreground) flex flex-col items-center gap-2 list-none">
 							<SearchIcon
 								size={20}
 								className="text-(--color-muted-foreground)"
@@ -166,8 +166,8 @@ export function ZoneSearch({
 									onMouseEnter={() => setSelectedIndex(i)}
 									disabled={alreadyAdded}
 									className={[
-										"w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 border-b-2 border-(--color-border-subtle) last:border-b-0",
-										"transition-colors duration-75 text-left",
+										"w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 border-b-[2.5px] border-(--color-border-subtle) last:border-b-0",
+										"transition-colors duration-100 text-left",
 										alreadyAdded
 											? "opacity-40 cursor-not-allowed"
 											: selectedIndex === i
@@ -184,17 +184,17 @@ export function ZoneSearch({
 											/>
 										) : (
 											<span
-												className="w-6 h-6 border-2 border-current shrink-0 inline-block"
+												className="w-6 h-6 border-[2.5px] border-current shrink-0 inline-block"
 												aria-hidden="true"
 											/>
 										)}
 										<div className="min-w-0 flex flex-col text-left">
-											<span className="font-mono text-sm sm:text-base font-bold tracking-wider uppercase truncate">
+											<span className="font-sans text-sm sm:text-base font-bold tracking-wide uppercase truncate">
 												{r.city}
 											</span>
 											<span
 												className={[
-													"font-mono text-[9px] sm:text-[10px] truncate uppercase tracking-widest",
+													"font-sans text-[9px] sm:text-[10px] truncate uppercase tracking-wide",
 													selectedIndex === i
 														? "opacity-70"
 														: "text-(--color-muted-foreground)",
@@ -210,7 +210,7 @@ export function ZoneSearch({
 											{formatTime(now, r.tz, false)}
 										</span>
 										{alreadyAdded && (
-											<span className="font-mono text-[8px] uppercase tracking-widest border-2 border-current px-1.5 py-0.5">
+											<span className="font-sans font-semibold text-[8px] uppercase tracking-wide border-[2.5px] border-current px-1.5 py-0.5">
 												added
 											</span>
 										)}
@@ -220,10 +220,9 @@ export function ZoneSearch({
 						);
 					})}
 				</ul>
-				<div className="p-3 sm:p-4 border-t-2 border-(--color-border) flex justify-between items-center bg-(--color-surface)">
-					<span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-widest text-(--color-muted-foreground)">
-						{results.length > 0 ? "↑↓ Navigate · Enter to add · " : ""}Esc to
-						close
+				<div className="p-3 sm:p-4 border-t-[3px] border-(--color-border) flex justify-between items-center bg-(--color-surface)">
+					<span className="font-sans font-semibold text-[9px] sm:text-[10px] uppercase tracking-wide text-(--color-muted-foreground)">
+						{results.length > 0 ? "Navigate · Enter to add · " : ""}Esc to close
 					</span>
 					<PixelButton
 						variant="outline"
