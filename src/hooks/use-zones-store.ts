@@ -37,13 +37,6 @@ export function useZonesStore() {
 		() => store.setState({ ambientMode: !store.getState().ambientMode }),
 		[],
 	);
-	const toggleSoundReactiveGlow = useCallback(
-		() =>
-			store.setState({
-				soundReactiveGlow: !store.getState().soundReactiveGlow,
-			}),
-		[],
-	);
 	const toggleEarthBackdrop = useCallback(
 		() =>
 			store.setState({
@@ -77,7 +70,6 @@ export function useZonesStore() {
 		removeZone,
 		reorderZones,
 		toggleAmbientMode,
-		toggleSoundReactiveGlow,
 		toggleEarthBackdrop,
 		setWorkingHours,
 		exportZonesJson,

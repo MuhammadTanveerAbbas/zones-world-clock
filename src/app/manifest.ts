@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
 		name: "Zones World Clock",
 		short_name: "Zones",
 		description:
-			"A premium timezone dashboard with Pomodoro timer, ambient sounds, and productivity analytics.",
+			"A premium timezone dashboard with Pomodoro timer and productivity analytics.",
 		start_url: "/",
 		display: "standalone",
 		background_color: "#ffffff",

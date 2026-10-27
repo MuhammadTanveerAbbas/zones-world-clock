@@ -312,11 +312,6 @@ export function PomodoroTimer({
 							checked={settings.autoStartFocus}
 							onChange={(v) => updateSettings({ autoStartFocus: v })}
 						/>
-						<SettingToggle
-							label="Sound"
-							checked={settings.soundEnabled}
-							onChange={(v) => updateSettings({ soundEnabled: v })}
-						/>
 					</div>
 				)}
 			</div>

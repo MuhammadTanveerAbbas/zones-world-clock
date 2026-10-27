@@ -1,7 +1,6 @@
 "use client";
 
 import { useZonesStore } from "@/hooks/use-zones-store";
-import { audioManager } from "@/lib/audio-manager";
 import {
 	BACKDROP_STAGGER_MS,
 	BACKDROP_TRANSITION,
@@ -57,8 +56,6 @@ export function OverlayPanel({
 	const prevFocusRef = useRef<HTMLElement | null>(null);
 	const reducedMotion = useReducedMotion();
 	const isMobile = useIsMobile();
-	const { soundReactiveGlow } = useZonesStore();
-	const [glowOffset, setGlowOffset] = useState(0);
 
 	useEffect(() => {
 		if (open) {
@@ -69,19 +66,6 @@ export function OverlayPanel({
 		prevFocusRef.current?.focus();
 	}, [open]);
 
-	useEffect(() => {
-		if (!open || reducedMotion || !soundReactiveGlow) return;
-		if (audioManager.activeSound === "none") return;
-		let raf: number;
-		const poll = () => {
-			const amp = audioManager.amplitude;
-			setGlowOffset(Math.round(amp * 20) / 10);
-			raf = requestAnimationFrame(poll);
-		};
-		raf = requestAnimationFrame(poll);
-		return () => cancelAnimationFrame(raf);
-	}, [open, reducedMotion, soundReactiveGlow]);
-
 	const handleKey = useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key === "Escape") onClose();
@@ -91,12 +75,7 @@ export function OverlayPanel({
 
 	const hiddenVariant = isMobile ? "hiddenMobile" : "hiddenDesktop";
 	const exitVariant = isMobile ? "exitMobile" : "exitDesktop";
-	const shadowStyle =
-		soundReactiveGlow && !reducedMotion && audioManager.activeSound !== "none"
-			? {
-					boxShadow: `${6 + glowOffset}px ${6 + glowOffset}px 0 0 var(--pixel)`,
-				}
-			: { boxShadow: "6px 6px 0 0 var(--pixel)" };
+	const shadowStyle = { boxShadow: "6px 6px 0 0 var(--pixel)" };
 
 	return (
 		<AnimatePresence>

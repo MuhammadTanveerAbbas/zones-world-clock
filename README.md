@@ -41,8 +41,6 @@ Zones is a clean, fast, and fully client-side world clock dashboard. It solves t
 - 📊 **Business Hours Heatmap:** Visual per-zone 24h strip showing core/edge/off hours
 - 🌎 **NASA EPIC Earth View:** Optional live Earth backdrop from NASA's DSCOVR satellite
 - 🌗 **Day/Night Terminator:** Solar position glyphs showing day/night per zone
-- 🎵 **21 Ambient Sounds:** Synthesized in real-time via Web Audio API + 2 recorded CC0 tracks
-- 🔊 **Sound-Reactive Glow:** Overlays pulse subtly with ambient sound amplitude
 
 ## 🛠 Tech Stack
 
@@ -109,7 +107,6 @@ zones-world-clock/
 │   │   ├── grouped-zone-row.tsx
 │   │   ├── dashboard.tsx
 │   │   ├── pomodoro-timer.tsx
-│   │   ├── music-player.tsx
 │   │   ├── command-palette.tsx
 │   │   ├── time-scrubber.tsx
 │   │   ├── view-switcher.tsx
@@ -118,8 +115,7 @@ zones-world-clock/
 │   │   └── theme-provider.tsx
 │   ├── hooks/
 │   │   ├── use-world-clock.ts
-│   │   ├── use-zones-store.ts
-│   │   └── use-click-sound.ts
+│   │   └── use-zones-store.ts
 │   └── lib/
 │       ├── store.ts
 │       ├── zones.ts
@@ -192,14 +188,14 @@ Contributions are welcome! Feel free to:
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-## 👨‍💻 Built by The MVP Guy
+## 👨‍💻 Built by Muhammad Tanveer Abbas
 
 <div align="center">
 
 **Muhammad Tanveer Abbas**
 SaaS Developer | Building production-ready MVPs in 14–21 days
 
-[![Portfolio](https://img.shields.io/badge/Portfolio-themvpguy.vercel.app-black?style=for-the-badge)](https://themvpguy.vercel.app)
+[![Portfolio](https://img.shields.io/badge/Portfolio-muhammadtanveerabbas.vercel.app-black?style=for-the-badge)](https://muhammadtanveerabbas.vercel.app)
 [![Twitter](https://img.shields.io/badge/Twitter-@m__tanveerabbas-1DA1F2?style=for-the-badge&logo=twitter)](https://x.com/m_tanveerabbas)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/muhammadtanveerabbas)
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github)](https://github.com/MuhammadTanveerAbbas)

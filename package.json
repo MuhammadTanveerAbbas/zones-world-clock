@@ -1,8 +1,8 @@
 {
 	"name": "zones-world-clock",
 	"version": "1.1.0",
-	"description": "A premium timezone dashboard with Pomodoro timer, ambient sounds, and productivity analytics",
-	"author": "Muhammad Tanveer Abbas <https://themvpguy.vercel.app/>",
+	"description": "A premium timezone dashboard with Pomodoro timer and productivity analytics",
+	"author": "Muhammad Tanveer Abbas <https://muhammadtanveerabbas.vercel.app/>",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -13,7 +13,6 @@
 		"world-clock",
 		"pomodoro",
 		"productivity",
-		"ambient-sounds",
 		"focus-timer",
 		"pwa",
 		"nextjs",

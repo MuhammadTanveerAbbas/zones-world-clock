@@ -13,7 +13,6 @@ export type PomodoroSettings = {
 	autoStartBreaks: boolean;
 	autoStartFocus: boolean;
 	notificationsEnabled: boolean;
-	soundEnabled: boolean;
 };
 
 export type PomodoroSession = {
@@ -48,7 +47,6 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
 	autoStartBreaks: true,
 	autoStartFocus: true,
 	notificationsEnabled: true,
-	soundEnabled: true,
 };
 
 export const DEFAULT_POMODORO_STATE: PomodoroState = {

@@ -1,7 +1,5 @@
 "use client";
 
-import { useClickSound } from "@/hooks/use-click-sound";
-import { type AmbientSound, audioManager } from "@/lib/audio-manager";
 import type { ViewMode } from "@/lib/store";
 import { pomodoroStore } from "@/lib/store-pomodoro";
 import { useTheme } from "next-themes";
@@ -22,10 +20,8 @@ import {
 	MenuIcon,
 	MoonIcon,
 	PlusIcon,
-	RewindIcon,
 	SparkleIcon,
 	SparkleOffIcon,
-	SpeakerIcon,
 	StackIcon,
 	StopwatchIcon,
 	SunIcon,
@@ -52,31 +48,6 @@ function usePomodoroLive() {
 	);
 }
 
-const SOUND_LABELS: Record<AmbientSound, string> = {
-	none: "None",
-	rain: "Rain",
-	forest: "Forest",
-	cafe: "Cafe",
-	ocean: "Ocean",
-	wind: "Wind",
-	whiteNoise: "White Noise",
-	thunder: "Thunder",
-	night: "Night",
-	fire: "Campfire",
-	stream: "Stream",
-	fan: "Fan",
-	birds: "Birds",
-	waterfall: "Waterfall",
-	bowl: "Bowl",
-	blizzard: "Blizzard",
-	train: "Train",
-	spaceship: "Spaceship",
-	desert: "Desert",
-	rainOnRoof: "Rain on Roof",
-	signatureRain: "Signature Rain",
-	signatureDrone: "Signature Drone",
-};
-
 export function ViewSwitcher({
 	current,
 	onChange,
@@ -91,24 +62,12 @@ export function ViewSwitcher({
 	onAddZone: () => void;
 	ambientMode: boolean;
 	onToggleAmbient: () => void;
-	activePanel:
-		| "pomodoro"
-		| "sounds"
-		| "scrubber"
-		| "dashboard"
-		| "meeting"
-		| null;
-	onPanelChange: (
-		panel: "pomodoro" | "sounds" | "scrubber" | "dashboard" | "meeting" | null,
-	) => void;
+	activePanel: "pomodoro" | "dashboard" | "meeting" | null;
+	onPanelChange: (panel: "pomodoro" | "dashboard" | "meeting" | null) => void;
 }) {
 	const pomoState = usePomodoroLive();
 	const pomoRunning = pomoState.phase === "running";
-	const sound = audioManager.activeSound;
-	const soundActive = sound !== "none";
-	const soundLabel = soundActive ? (SOUND_LABELS[sound] ?? sound) : "";
 	const [menuOpen, setMenuOpen] = useState(false);
-	const playClick = useClickSound();
 
 	const handleClose = useCallback(() => setMenuOpen(false), []);
 
@@ -131,14 +90,6 @@ export function ViewSwitcher({
 					</span>
 				</a>
 				<div className="flex items-center gap-2">
-					{soundActive && (
-						<div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 border-[2px] border-(--color-border-subtle)">
-							<span className="w-1.5 h-1.5 bg-(--color-delta-positive) animate-pulse-dot shrink-0" />
-							<span className="font-sans text-[9px] uppercase tracking-wide text-(--color-muted-foreground)">
-								{soundLabel}
-							</span>
-						</div>
-					)}
 					<button
 						type="button"
 						onClick={() => setMenuOpen(!menuOpen)}
@@ -173,7 +124,6 @@ export function ViewSwitcher({
 						activePanel={activePanel}
 						onPanelChange={onPanelChange}
 						pomoRunning={pomoRunning}
-						soundActive={soundActive}
 						onClose={handleClose}
 					/>
 				</>
@@ -191,7 +141,6 @@ function MenuPanel({
 	activePanel,
 	onPanelChange,
 	pomoRunning,
-	soundActive,
 	onClose,
 }: {
 	current: ViewMode;
@@ -199,23 +148,13 @@ function MenuPanel({
 	onAddZone: () => void;
 	ambientMode: boolean;
 	onToggleAmbient: () => void;
-	activePanel:
-		| "pomodoro"
-		| "sounds"
-		| "scrubber"
-		| "dashboard"
-		| "meeting"
-		| null;
-	onPanelChange: (
-		panel: "pomodoro" | "sounds" | "scrubber" | "dashboard" | "meeting" | null,
-	) => void;
+	activePanel: "pomodoro" | "dashboard" | "meeting" | null;
+	onPanelChange: (panel: "pomodoro" | "dashboard" | "meeting" | null) => void;
 	pomoRunning: boolean;
-	soundActive: boolean;
 	onClose: () => void;
 }) {
 	const panelRef = useRef<HTMLDivElement>(null);
 	const { theme, setTheme } = useTheme();
-	const playClick = useClickSound();
 
 	useEffect(() => {
 		const handleKey = (e: KeyboardEvent) => {
@@ -264,7 +203,6 @@ function MenuPanel({
 										type="button"
 										onClick={() => {
 											onChange(mode);
-											playClick();
 										}}
 										className={[
 											"flex items-center gap-2 font-sans font-semibold text-[10px] uppercase tracking-wide px-3 py-2.5 cursor-pointer text-left w-full border-[2.5px] transition-colors duration-100",
@@ -300,30 +238,6 @@ function MenuPanel({
 										onPanelChange(
 											activePanel === "pomodoro" ? null : "pomodoro",
 										);
-										playClick();
-										onClose();
-									}}
-								/>
-								<ToolButton
-									label="Sounds"
-									icon={<SpeakerIcon size={14} />}
-									active={activePanel === "sounds"}
-									isLive={soundActive}
-									onClick={() => {
-										onPanelChange(activePanel === "sounds" ? null : "sounds");
-										playClick();
-										onClose();
-									}}
-								/>
-								<ToolButton
-									label="Scrubber"
-									icon={<RewindIcon size={14} />}
-									active={activePanel === "scrubber"}
-									onClick={() => {
-										onPanelChange(
-											activePanel === "scrubber" ? null : "scrubber",
-										);
-										playClick();
 										onClose();
 									}}
 								/>
@@ -335,7 +249,6 @@ function MenuPanel({
 										onPanelChange(
 											activePanel === "dashboard" ? null : "dashboard",
 										);
-										playClick();
 										onClose();
 									}}
 								/>
@@ -351,7 +264,6 @@ function MenuPanel({
 									type="button"
 									onClick={() => {
 										setTheme("light");
-										playClick();
 										onClose();
 									}}
 									className={[
@@ -368,7 +280,6 @@ function MenuPanel({
 									type="button"
 									onClick={() => {
 										setTheme("dark");
-										playClick();
 										onClose();
 									}}
 									className={[
@@ -386,7 +297,6 @@ function MenuPanel({
 								type="button"
 								onClick={() => {
 									onToggleAmbient();
-									playClick();
 									onClose();
 								}}
 								className={[
@@ -411,7 +321,6 @@ function MenuPanel({
 							type="button"
 							onClick={() => {
 								onAddZone();
-								playClick();
 							}}
 							className="flex items-center justify-center gap-2 font-sans font-semibold text-[10px] uppercase tracking-wide w-full px-3 py-3 cursor-pointer border-[2.5px] border-(--color-accent) bg-(--color-accent) text-(--color-accent-fg) hover:opacity-90 transition-opacity"
 						>

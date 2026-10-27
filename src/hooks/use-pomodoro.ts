@@ -1,6 +1,5 @@
 "use client";
 
-import { playSessionEndChime } from "@/lib/audio-manager";
 import { analyticsStore } from "@/lib/store-analytics";
 import {
 	type PomodoroMode,
@@ -34,9 +33,6 @@ export function usePomodoro() {
 		if (currentState.mode === "focus" && currentState.currentSessionStart) {
 			const durationMs = Date.now() - currentState.currentSessionStart;
 			analyticsStore.trackSession(durationMs);
-		}
-		if (currentState.settings.soundEnabled) {
-			playSessionEndChime();
 		}
 		pomodoroStore.completeSession();
 	}, []);

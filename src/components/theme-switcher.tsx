@@ -1,6 +1,5 @@
 "use client";
 
-import { useClickSound } from "@/hooks/use-click-sound";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MoonIcon, SparkleIcon, SparkleOffIcon, SunIcon } from "./icons";
@@ -21,7 +20,6 @@ export function ThemeSwitcher({
 	onToggleAmbient: () => void;
 }) {
 	const { theme, setTheme } = useTheme();
-	const playClick = useClickSound();
 	const [mounted, setMounted] = useState(false);
 	const [open, setOpen] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
@@ -57,7 +55,6 @@ export function ThemeSwitcher({
 						icon={icon}
 						onClick={() => {
 							setTheme(value);
-							playClick();
 						}}
 						aria-pressed={theme === value}
 					>
@@ -75,7 +72,6 @@ export function ThemeSwitcher({
 					}
 					onClick={() => {
 						setOpen(!open);
-						playClick();
 					}}
 					aria-label={`Theme: ${theme ?? "dark"}`}
 					aria-expanded={open}
@@ -95,7 +91,6 @@ export function ThemeSwitcher({
 								aria-pressed={theme === value}
 								onClick={() => {
 									setTheme(value);
-									playClick();
 									setOpen(false);
 								}}
 								className={[
@@ -116,7 +111,6 @@ export function ThemeSwitcher({
 							aria-pressed={ambientMode}
 							onClick={() => {
 								onToggleAmbient();
-								playClick();
 								setOpen(false);
 							}}
 							className={[

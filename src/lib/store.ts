@@ -22,7 +22,6 @@ export type ZonesState = {
 	viewMode: ViewMode;
 	use24h: boolean;
 	ambientMode: boolean;
-	soundReactiveGlow: boolean;
 	earthBackdrop: boolean;
 	workingHours: WorkingHoursConfig;
 	version?: number;
@@ -37,7 +36,6 @@ const DEFAULT_STATE: ZonesState = {
 	viewMode: "stack",
 	use24h: false,
 	ambientMode: true,
-	soundReactiveGlow: true,
 	earthBackdrop: false,
 	workingHours: { start: 9, end: 18 },
 	version: CURRENT_VERSION,

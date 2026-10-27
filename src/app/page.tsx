@@ -31,13 +31,6 @@ const PomodoroTimer = dynamic(
 		})),
 	{ ssr: false },
 );
-const MusicPlayer = dynamic(
-	() =>
-		import("@/components/music-player").then((m) => ({
-			default: m.MusicPlayer,
-		})),
-	{ ssr: false },
-);
 const Dashboard = dynamic(
 	() =>
 		import("@/components/dashboard").then((m) => ({ default: m.Dashboard })),
@@ -92,7 +85,7 @@ export default function Home() {
 	} = useZonesStore();
 
 	const [activePanel, setActivePanel] = useState<
-		"pomodoro" | "sounds" | "scrubber" | "dashboard" | "meeting" | null
+		"pomodoro" | "dashboard" | "meeting" | null
 	>(null);
 	const [showSearch, setShowSearch] = useState(false);
 	const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -118,7 +111,6 @@ export default function Home() {
 		p: {
 			fn: () => setActivePanel((p) => (p === "pomodoro" ? null : "pomodoro")),
 		},
-		s: { fn: () => setActivePanel((p) => (p === "sounds" ? null : "sounds")) },
 		m: {
 			fn: () => setActivePanel((p) => (p === "meeting" ? null : "meeting")),
 		},
@@ -251,21 +243,8 @@ export default function Home() {
 				</LazyMotion>
 			</div>
 
-			<Footer />
-
-			<ErrorBoundary>
-				<PomodoroTimer open={activePanel === "pomodoro"} onClose={closePanel} />
-			</ErrorBoundary>
-			<ErrorBoundary>
-				<MusicPlayer open={activePanel === "sounds"} onClose={closePanel} />
-			</ErrorBoundary>
-			<ErrorBoundary>
-				<Dashboard open={activePanel === "dashboard"} onClose={closePanel} />
-			</ErrorBoundary>
 			<ErrorBoundary>
 				<TimeScrubber
-					open={activePanel === "scrubber"}
-					onClose={closePanel}
 					scrubberMinutes={scrubberMinutes}
 					setScrubberMinutes={setScrubberMinutes}
 					resetScrubber={resetScrubber}
@@ -273,6 +252,15 @@ export default function Home() {
 					use24h={use24h}
 					toggleTimeFormat={toggleTimeFormat}
 				/>
+			</ErrorBoundary>
+
+			<Footer />
+
+			<ErrorBoundary>
+				<PomodoroTimer open={activePanel === "pomodoro"} onClose={closePanel} />
+			</ErrorBoundary>
+			<ErrorBoundary>
+				<Dashboard open={activePanel === "dashboard"} onClose={closePanel} />
 			</ErrorBoundary>
 			<ErrorBoundary>
 				<MeetingFinder
